@@ -10,7 +10,7 @@ void main() {
 }
 
 @pragma("vm:entry-point")
-void showOverlay() {
+void overlayMain() {
   runApp(
     const MaterialApp(
       debugShowCheckedModeBanner: false,

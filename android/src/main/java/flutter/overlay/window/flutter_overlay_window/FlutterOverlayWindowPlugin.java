@@ -79,7 +79,11 @@ public class FlutterOverlayWindowPlugin implements
             WindowSetup.setGravityFromAlignment(alignment != null ? alignment : "center");
             WindowSetup.setFlag(flag != null ? flag : "flagNotFocusable");
             WindowSetup.overlayMessage = overlayMessage;
-            context.startService(new Intent(context, OverlayService.class));
+
+            final Intent intent = new Intent(context, OverlayService.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            context.startService(intent);
             result.success(null);
         } else {
             result.notImplemented();
@@ -97,7 +101,7 @@ public class FlutterOverlayWindowPlugin implements
         FlutterEngineGroup enn = new FlutterEngineGroup(context);
         DartExecutor.DartEntrypoint dEntry = new DartExecutor.DartEntrypoint(
                 FlutterInjector.instance().flutterLoader().findAppBundlePath(),
-                "showOverlay");
+                "overlayMain");
         FlutterEngine engine = enn.createAndRunEngine(context, dEntry);
         FlutterEngineCache.getInstance().put(OverlayConstants.CACHED_TAG, engine);
         binding.addActivityResultListener(this);
@@ -120,7 +124,7 @@ public class FlutterOverlayWindowPlugin implements
     public void onMessage(@Nullable Object message, @NonNull BasicMessageChannel.Reply reply) {
         Log.d("MSG", "onMessage: " + message);
         BasicMessageChannel overlayMessageChannel = new BasicMessageChannel(
-                FlutterEngineCache.getInstance().get("my_engine_id")
+                FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG)
                         .getDartExecutor(),
                 OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
         overlayMessageChannel.send(message, reply);
