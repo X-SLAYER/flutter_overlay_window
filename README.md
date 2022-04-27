@@ -10,9 +10,14 @@ Flutter plugin for displaying your flutter app over other apps on the screen
 |![truecaller](https://user-images.githubusercontent.com/22800380/165636217-8957396b-dc54-4e6d-aa50-e8bfdb9383cf.gif)|![clickable](https://user-images.githubusercontent.com/22800380/165636120-dcd9ee13-5fca-4f8a-a562-b2f53c0b5e24.gif)|
 
 
-## Usage
+## Installation
 
-Add dependency to pubspec.yaml file
+Add package to your pubspec:
+
+```yaml
+dependencies:
+  flutter_overlay_window: any # or the latest version on Pub
+```
 
 ### Android
 
