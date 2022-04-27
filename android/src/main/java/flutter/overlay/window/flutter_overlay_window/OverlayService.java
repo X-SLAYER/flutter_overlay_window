@@ -145,8 +145,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 moving = false;
                 int[] location = new int[2];
                 flutterView.getLocationOnScreen(location);
-                originalXPos = location[0];
-                originalYPos = location[1];
+                originalXPos = location[1];
+                originalYPos = location[0];
                 offsetX = originalXPos - x;
                 offsetY = originalYPos - y;
             } else if (event.getAction() == MotionEvent.ACTION_MOVE) {

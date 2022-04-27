@@ -18,20 +18,20 @@ class FlutterOverlayWindow {
       BasicMessageChannel("x-slayer/overlay_messenger", JSONMessageCodec());
 
   /// Open overLay content
-  /// Optional arguments:
-  ///   - `int` [height] default is [overlaySizeFill]
-  ///   - `int` [width] default is [overlaySizeFill]
-  ///   - `OverlayAlignment` [width] default is [OverlayAlignment.center]
-  ///   - `OverlayFlag` [flag] default is [OverlayFlag.flagNotFocusable]
-  ///   - `String` [overlayMessage] default is "overlay activated"
-  ///   - `bool` [enableDrag] default is "false"
+  ///
+  /// - Optional arguments:
+  /// `height` the overlay height and default is [overlaySizeFill]
+  /// `width` the overlay width and default is [overlaySizeFill]
+  /// `OverlayAlignment` the alignment postion on screen and default is [OverlayAlignment.center]
+  /// `OverlayFlag` the overlay flag and default is [OverlayFlag.flagNotFocusable]
+  /// `overlayMessage the notification message and default is "overlay activated"
+  /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
   static Future<void> showOverlay({
     int height = _defaultHeight,
     int width = _defaultWidth,
     OverlayAlignment alignment = OverlayAlignment.center,
     OverlayFlag flag = OverlayFlag.flagNotFocusable,
-    String overlayMessage =
-        "This app is displaying over other apps on your screen",
+    String overlayMessage = "overlay activated",
     bool enableDrag = false,
   }) async {
     await _channel.invokeMethod('showOverlay', {
@@ -85,7 +85,7 @@ class FlutterOverlayWindow {
     return _controller.stream;
   }
 
-  /// dispose overlay controller
+  /// dispose overlay stream
   static void disposeOverlayListener() {
     _controller.close();
   }

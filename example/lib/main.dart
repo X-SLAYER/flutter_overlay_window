@@ -1,9 +1,7 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-
-import 'package:flutter_overlay_window/flutter_overlay_window.dart';
-import 'package:flutter_overlay_window_example/overlay.dart';
+import 'package:flutter_overlay_window_example/home_page.dart';
+import 'package:flutter_overlay_window_example/overlays/clickable_overlay.dart';
+import 'package:flutter_overlay_window_example/overlays/true_caller_overlay.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +12,7 @@ void overlayMain() {
   runApp(
     const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: OverlayWindow(),
+      home: TrueCallerOverlay(), //ClickableOverlay()
     ),
   );
 }
@@ -29,44 +27,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: Center(
-          child: Column(
-            children: [
-              TextButton(
-                onPressed: () async {
-                  final status =
-                      await FlutterOverlayWindow.isPermissionGranted();
-                  log("Is Permission Granted: $status");
-                },
-                child: const Text("Check Permission"),
-              ),
-              const SizedBox(height: 10.0),
-              TextButton(
-                onPressed: () async {
-                  final bool? res =
-                      await FlutterOverlayWindow.requestPermession();
-                  log("status: $res");
-                },
-                child: const Text("Request Permission"),
-              ),
-              const SizedBox(height: 10.0),
-              TextButton(
-                onPressed: () async {
-                  await FlutterOverlayWindow.showOverlay();
-                },
-                child: const Text("Show Overlay"),
-              ),
-              const SizedBox(height: 10.0),
-            ],
-          ),
-        ),
-      ),
+      home: HomePage(),
     );
   }
 }
