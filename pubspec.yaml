@@ -1,5 +1,5 @@
 name: flutter_overlay_window
-description: Android plugin for displaying flutter view over other apps
+description: Flutter plugin for displaying your flutter app over other apps on the screen
 version: 0.0.1
 homepage: https://github.com/X-SLAYER/flutter_overlay_window
 
