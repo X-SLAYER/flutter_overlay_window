@@ -44,11 +44,6 @@ void overlayMain() {
 
 ```
 
-### Methods
-
-To open an overlay, call `FlutterOverlayApps.showOverlay()`.
-Default `height` & `width` is fill screen
-
 ### USAGE
 
 ```dart
@@ -59,13 +54,15 @@ Default `height` & `width` is fill screen
  /// it will open the overlay settings page and return `true` once the permission granted.
  final bool status = await FlutterOverlayWindow.requestPermession();
 
-  /// Open overLay content
-  /// Takes optional:
-  ///   - `int` [height] default is [overlaySizeFill]
-  ///   - `int` [width] default is [overlaySizeFill]
-  ///   - `OverlayAlignment` [width] default is [OverlayAlignment.center]
-  ///   - `OverlayFlag` [flag] default is [OverlayFlag.flagNotFocusable]
-  ///   - `String` [overlayMessage] default is "overlay activated"
+ /// Open overLay content
+ ///
+ /// - Optional arguments:
+ /// `height` the overlay height and default is [overlaySizeFill]
+ /// `width` the overlay width and default is [overlaySizeFill]
+ /// `OverlayAlignment` the alignment postion on screen and default is [OverlayAlignment.center]
+ /// `OverlayFlag` the overlay flag and default is [OverlayFlag.flagNotFocusable]
+ /// `overlayMessage the notification message and default is "overlay activated"
+ /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
  await FlutterOverlayWindow.showOverlay();
 
  /// closes overlay if open
