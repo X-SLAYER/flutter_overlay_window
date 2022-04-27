@@ -24,7 +24,7 @@ class FlutterOverlayWindow {
   /// `width` the overlay width and default is [overlaySizeFill]
   /// `OverlayAlignment` the alignment postion on screen and default is [OverlayAlignment.center]
   /// `OverlayFlag` the overlay flag and default is [OverlayFlag.flagNotFocusable]
-  /// `overlayMessage the notification message and default is "overlay activated"
+  /// `overlayMessage` the notification message and default is "overlay activated"
   /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
   static Future<void> showOverlay({
     int height = _defaultHeight,
