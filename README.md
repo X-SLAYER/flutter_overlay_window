@@ -2,6 +2,14 @@
 
 Flutter plugin for displaying your flutter app over other apps on the screen
 
+
+## Preview
+
+|TrueCaller overlay exemple	| clickable overlay exemple|
+|:------------:|:------------:|
+|![truecaller](https://user-images.githubusercontent.com/22800380/165636217-8957396b-dc54-4e6d-aa50-e8bfdb9383cf.gif)|![clickable](https://user-images.githubusercontent.com/22800380/165636120-dcd9ee13-5fca-4f8a-a562-b2f53c0b5e24.gif)|
+
+
 ## Usage
 
 Add dependency to pubspec.yaml file
@@ -71,3 +79,7 @@ Default `height` & `width` is fill screen
       log("Current Event: $event");
     });
 ```
+
+## Credits
+this plugin is optimized version from [flutter_overlay_apps](https://pub.dev/packages/flutter_overlay_apps)
+
