@@ -42,7 +42,8 @@ class _HomePageState extends State<HomePage> {
                 await FlutterOverlayWindow.showOverlay(
                   height: 300,
                   enableDrag: true,
-                  overlayMessage: "Iheb is calling",
+                  overlayMessage: "X-SLAYER",
+                  flag: OverlayFlag.flagNotTouchModal,
                 );
 
                 /// call this instead if you want to test clicks over the overlay
@@ -54,7 +55,6 @@ class _HomePageState extends State<HomePage> {
               },
               child: const Text("Show Overlay"),
             ),
-            const SizedBox(height: 10.0),
           ],
         ),
       ),

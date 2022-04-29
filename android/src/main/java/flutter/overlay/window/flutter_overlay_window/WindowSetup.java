@@ -14,7 +14,7 @@ public abstract class WindowSetup {
     static int flag = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
     static int gravity = Gravity.CENTER;
     static BasicMessageChannel messenger = null;
-    static String overlayMessage = "overlay is activated";
+    static String overlayMessage = "Overlay is activated";
     static boolean enableDrag = false;
 
 
@@ -24,6 +24,9 @@ public abstract class WindowSetup {
         }
         if (name.equalsIgnoreCase("flagNotTouchable")) {
             flag = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+        }
+        if (name.equalsIgnoreCase("flagNotTouchModal")) {
+            flag = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
         }
     }
 

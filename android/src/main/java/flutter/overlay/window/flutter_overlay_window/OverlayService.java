@@ -72,10 +72,15 @@ public class OverlayService extends Service implements View.OnTouchListener {
         flutterView.setFocusableInTouchMode(true);
         flutterView.setBackgroundColor(Color.TRANSPARENT);
         flutterChannel.setMethodCallHandler((call, result) -> {
+            Log.d("CALL", "onStartCommand: " + call.method);
             if (call.method.equals("close")) {
                 closeOverlay();
                 result.success(true);
             }
+            /* else if (call.method.equals("updateFlag")) {
+                String flag = call.argument("flag").toString();
+                updateOverlayFlag(result, flag);
+            }*/
         });
         overlayMessageChannel.setMessageHandler((message, reply) -> {
             WindowSetup.messenger.send(message);
@@ -95,6 +100,17 @@ public class OverlayService extends Service implements View.OnTouchListener {
         windowManager.addView(flutterView, params);
         return START_STICKY;
     }
+
+   /* private void updateOverlayFlag(MethodChannel.Result result, String flag) {
+        if (windowManager != null) {
+            WindowSetup.setFlag(flag);
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
+            params.flags = WindowSetup.flag;
+            windowManager.updateViewLayout(flutterView, params);
+            result.success(true);
+        }
+        result.success(false);
+    }*/
 
     private void closeOverlay() {
         if (windowManager != null) {

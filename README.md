@@ -80,8 +80,14 @@ void overlayMain() {
   FlutterOverlayWindow.overlayListener.listen((event) {
       log("Current Event: $event");
     });
+
+ /// use [OverlayFlag.flagNotTouchModal] when you want to use fields that show keyboards
+ await FlutterOverlayWindow.showOverlay(flag: OverlayFlag.flagNotTouchModal);
+
 ```
 
 ## Credits
 this plugin is optimized version from [flutter_overlay_apps](https://pub.dev/packages/flutter_overlay_apps)
+
+
 

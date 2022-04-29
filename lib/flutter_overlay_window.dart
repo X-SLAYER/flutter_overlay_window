@@ -110,5 +110,10 @@ enum OverlayFlag {
   flagNotTouchable,
 
   /// Window flag: this window won't ever get key input focus, so the user can not send key or other button events to it
-  flagNotFocusable
+  flagNotFocusable,
+
+  /// Window flag: allow any pointer events outside of the window to be sent to the windows behind it.
+  ///
+  /// usefull when you want to use fields that show keyboards
+  flagNotTouchModal
 }
