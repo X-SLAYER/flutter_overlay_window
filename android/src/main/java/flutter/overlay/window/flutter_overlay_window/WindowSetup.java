@@ -13,7 +13,7 @@ public abstract class WindowSetup {
     static int width = WindowManager.LayoutParams.MATCH_PARENT;
     static int flag = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
     static int gravity = Gravity.CENTER;
-    static BasicMessageChannel messenger = null;
+    static BasicMessageChannel<Object> messenger = null;
     static String overlayMessage = "Overlay is activated";
     static boolean enableDrag = false;
 

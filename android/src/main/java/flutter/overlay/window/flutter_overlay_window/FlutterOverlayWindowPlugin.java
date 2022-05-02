@@ -34,7 +34,7 @@ public class FlutterOverlayWindowPlugin implements
     private MethodChannel channel;
     private Context context;
     private Activity mActivity;
-    private BasicMessageChannel messenger;
+    private BasicMessageChannel<Object> messenger;
     private Result pendingResult;
     final int REQUEST_CODE_FOR_OVERLAY_PERMISSION = 1248;
 
@@ -93,6 +93,7 @@ public class FlutterOverlayWindowPlugin implements
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         channel.setMethodCallHandler(null);
+        WindowSetup.messenger.setMessageHandler(null);
     }
 
     @Override

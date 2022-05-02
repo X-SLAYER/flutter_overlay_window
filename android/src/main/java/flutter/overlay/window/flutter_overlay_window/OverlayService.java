@@ -35,7 +35,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private WindowManager windowManager = null;
     private FlutterView flutterView;
     private MethodChannel flutterChannel = new MethodChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.OVERLAY_TAG);
-    private BasicMessageChannel overlayMessageChannel = new BasicMessageChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
+    private BasicMessageChannel<Object> overlayMessageChannel = new BasicMessageChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
 
     private float offsetX;
     private float offsetY;
@@ -62,7 +62,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         if (windowManager != null) {
             closeOverlay();
         }
-        Log.d("CMD", "Service started");
+        Log.d("onStartCommand", "Service started");
         FlutterEngine engine = FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG);
         engine.getLifecycleChannel().appIsResumed();
         flutterView = new FlutterView(getApplicationContext(), new FlutterTextureView(getApplicationContext()));
@@ -72,15 +72,13 @@ public class OverlayService extends Service implements View.OnTouchListener {
         flutterView.setFocusableInTouchMode(true);
         flutterView.setBackgroundColor(Color.TRANSPARENT);
         flutterChannel.setMethodCallHandler((call, result) -> {
-            Log.d("CALL", "onStartCommand: " + call.method);
             if (call.method.equals("close")) {
                 closeOverlay();
                 result.success(true);
-            }
-            /* else if (call.method.equals("updateFlag")) {
+            } else if (call.method.equals("updateFlag")) {
                 String flag = call.argument("flag").toString();
                 updateOverlayFlag(result, flag);
-            }*/
+            }
         });
         overlayMessageChannel.setMessageHandler((message, reply) -> {
             WindowSetup.messenger.send(message);
@@ -94,29 +92,28 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 PixelFormat.TRANSPARENT
         );
         params.gravity = WindowSetup.gravity;
-        if (WindowSetup.enableDrag) {
-            flutterView.setOnTouchListener(this);
-        }
+        flutterView.setOnTouchListener(this);
         windowManager.addView(flutterView, params);
         return START_STICKY;
     }
-
-   /* private void updateOverlayFlag(MethodChannel.Result result, String flag) {
-        if (windowManager != null) {
-            WindowSetup.setFlag(flag);
-            WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
-            params.flags = WindowSetup.flag;
-            windowManager.updateViewLayout(flutterView, params);
-            result.success(true);
-        }
-        result.success(false);
-    }*/
 
     private void closeOverlay() {
         if (windowManager != null) {
             windowManager.removeView(flutterView);
             windowManager = null;
             stopSelf();
+        }
+    }
+
+    private void updateOverlayFlag(MethodChannel.Result result, String flag) {
+        if (windowManager != null) {
+            WindowSetup.setFlag(flag);
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
+            params.flags = WindowSetup.flag;
+            windowManager.updateViewLayout(flutterView, params);
+            result.success(true);
+        } else {
+            result.success(false);
         }
     }
 
@@ -154,7 +151,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
     @Override
     public boolean onTouch(View view, MotionEvent event) {
-        if (windowManager != null) {
+        if (windowManager != null && WindowSetup.enableDrag) {
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
                 float x = event.getRawX();
                 float y = event.getRawY();
@@ -184,4 +181,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
         return false;
     }
+
+
 }

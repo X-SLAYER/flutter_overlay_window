@@ -56,7 +56,7 @@ class FlutterOverlayWindow {
 
   /// request overlay permission
   /// it will open the overlay settings page and return `true` once the permission granted.
-  static Future<bool?> requestPermession() async {
+  static Future<bool?> requestPermission() async {
     try {
       return await _channel.invokeMethod<bool?>('requestPermission');
     } on PlatformException catch (error) {
@@ -83,6 +83,13 @@ class FlutterOverlayWindow {
       return message;
     });
     return _controller.stream;
+  }
+
+  /// update the overlay flag while the overlay in action
+  static Future<bool?> updateFlag(OverlayFlag flag) async {
+    final bool? _res = await _overlayChannel
+        .invokeMethod<bool?>('updateFlag', {'flag': flag.name});
+    return _res;
   }
 
   /// dispose overlay stream
@@ -114,6 +121,6 @@ enum OverlayFlag {
 
   /// Window flag: allow any pointer events outside of the window to be sent to the windows behind it.
   ///
-  /// usefull when you want to use fields that show keyboards
+  /// usefull when you want to use fields that show keyboards.
   flagNotTouchModal
 }

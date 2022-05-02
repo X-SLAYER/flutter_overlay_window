@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    log("Started listening");
+    FlutterOverlayWindow.overlayListener.listen((event) {
+      log("$event");
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,7 +41,7 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () async {
                 final bool? res =
-                    await FlutterOverlayWindow.requestPermession();
+                    await FlutterOverlayWindow.requestPermission();
                 log("status: $res");
               },
               child: const Text("Request Permission"),
@@ -44,6 +54,7 @@ class _HomePageState extends State<HomePage> {
                   enableDrag: true,
                   overlayMessage: "X-SLAYER",
                   flag: OverlayFlag.flagNotTouchModal,
+                  alignment: OverlayAlignment.topCenter,
                 );
 
                 /// call this instead if you want to test clicks over the overlay
@@ -54,6 +65,13 @@ class _HomePageState extends State<HomePage> {
                 // );
               },
               child: const Text("Show Overlay"),
+            ),
+            const SizedBox(height: 10.0),
+            TextButton(
+              onPressed: () async {
+                FlutterOverlayWindow.shareData(jsonEncode({"Hey": "Okay"}));
+              },
+              child: const Text("Share Data"),
             ),
           ],
         ),
