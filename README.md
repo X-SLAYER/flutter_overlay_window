@@ -57,7 +57,7 @@ void overlayMain() {
 
  /// request overlay permission
  /// it will open the overlay settings page and return `true` once the permission granted.
- final bool status = await FlutterOverlayWindow.requestPermession();
+ final bool status = await FlutterOverlayWindow.requestPermission();
 
  /// Open overLay content
  ///

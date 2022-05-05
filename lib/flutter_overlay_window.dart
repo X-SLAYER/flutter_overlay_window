@@ -24,14 +24,16 @@ class FlutterOverlayWindow {
   /// `width` the overlay width and default is [overlaySizeFill]
   /// `OverlayAlignment` the alignment postion on screen and default is [OverlayAlignment.center]
   /// `OverlayFlag` the overlay flag and default is [OverlayFlag.flagNotFocusable]
-  /// `overlayMessage` the notification message and default is "overlay activated"
+  /// `overlayTitle` the notification message and default is "overlay activated"
+  /// `overlayContent` the notification message
   /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
   static Future<void> showOverlay({
     int height = _defaultHeight,
     int width = _defaultWidth,
     OverlayAlignment alignment = OverlayAlignment.center,
     OverlayFlag flag = OverlayFlag.flagNotFocusable,
-    String overlayMessage = "overlay activated",
+    String overlayTitle = "overlay activated",
+    String? overlayContent,
     bool enableDrag = false,
   }) async {
     await _channel.invokeMethod('showOverlay', {
@@ -39,7 +41,8 @@ class FlutterOverlayWindow {
       "width": width,
       "alignment": alignment.name,
       "flag": flag.name,
-      "overlayMessage": overlayMessage,
+      "overlayTitle": overlayTitle,
+      "overlayContent": overlayContent,
       "enableDrag": enableDrag
     });
   }
@@ -112,15 +115,15 @@ enum OverlayAlignment {
 
 enum OverlayFlag {
   /// Window flag: this window can never receive touch events.
-  /// usefull if you want to display click-through overlay
-  /// wrap you overlay widget with [IgnorePointer] if you want to use this
+  /// Usefull if you want to display click-through overlay
+  /// wrap you overlay widget with [IgnorePointer] if you want to use this.
   flagNotTouchable,
 
-  /// Window flag: this window won't ever get key input focus, so the user can not send key or other button events to it
+  /// Window flag: this window won't ever get key input focus
+  /// so the user can not send key or other button events to it.
   flagNotFocusable,
 
   /// Window flag: allow any pointer events outside of the window to be sent to the windows behind it.
-  ///
-  /// usefull when you want to use fields that show keyboards.
-  flagNotTouchModal
+  /// Usefull when you want to use fields that show keyboards.
+  flagNotTouchModal,
 }

@@ -50,10 +50,10 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () async {
                 await FlutterOverlayWindow.showOverlay(
-                  height: 300,
+                  height: 500,
                   enableDrag: true,
-                  overlayMessage: "X-SLAYER",
-                  flag: OverlayFlag.flagNotTouchModal,
+                  overlayTitle: "X-SLAYER",
+                  flag: OverlayFlag.flagNotTouchable,
                   alignment: OverlayAlignment.topCenter,
                 );
 

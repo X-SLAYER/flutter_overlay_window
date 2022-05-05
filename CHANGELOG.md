@@ -8,3 +8,8 @@
 ## 0.2.1
 
 * Add flag update on run time
+## 0.2.2
+
+* Add custom notification content text
+* improve the `flagNotFocusable`
+* update exemple
