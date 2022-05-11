@@ -53,8 +53,8 @@ class _HomePageState extends State<HomePage> {
                   height: 500,
                   enableDrag: true,
                   overlayTitle: "X-SLAYER",
-                  flag: OverlayFlag.flagNotTouchable,
-                  alignment: OverlayAlignment.topCenter,
+                  flag: OverlayFlag.flagNotFocusable,
+                  alignment: OverlayAlignment.center,
                 );
 
                 /// call this instead if you want to test clicks over the overlay
