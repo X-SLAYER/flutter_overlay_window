@@ -13,3 +13,8 @@
 * Add custom notification content text
 * improve the `flagNotFocusable`
 * update exemple
+## 0.2.7
+
+* Fix overlay issue to target all SDK versions
+* add `overlayTitle` and `overlayContent` arguments
+* Fix typo

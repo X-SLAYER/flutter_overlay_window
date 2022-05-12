@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () async {
                 await FlutterOverlayWindow.showOverlay(
-                  height: 500,
+                  height: (MediaQuery.of(context).size.height * 0.50).toInt(),
                   enableDrag: true,
                   overlayTitle: "X-SLAYER",
                   flag: OverlayFlag.flagNotFocusable,
