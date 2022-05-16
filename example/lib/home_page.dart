@@ -54,7 +54,6 @@ class _HomePageState extends State<HomePage> {
                   overlayTitle: "X-SLAYER",
                   flag: OverlayFlag.focusPointer,
                   alignment: OverlayAlignment.center,
-                  height: 500,
                 );
 
                 /// call this instead if you want to test clicks over the overlay

@@ -59,9 +59,9 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (windowManager != null) {
+      /*  if (windowManager != null) {
             closeOverlay();
-        }
+        } */
         Log.d("onStartCommand", "Service started");
         FlutterEngine engine = FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG);
         engine.getLifecycleChannel().appIsResumed();
@@ -73,8 +73,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         flutterView.setBackgroundColor(Color.TRANSPARENT);
         flutterChannel.setMethodCallHandler((call, result) -> {
             if (call.method.equals("close")) {
-                closeOverlay();
-                result.success(true);
+                closeOverlay(result);
             } else if (call.method.equals("updateFlag")) {
                 String flag = call.argument("flag").toString();
                 updateOverlayFlag(result, flag);
@@ -97,11 +96,18 @@ public class OverlayService extends Service implements View.OnTouchListener {
         return START_STICKY;
     }
 
-    private void closeOverlay() {
-        if (windowManager != null) {
-            windowManager.removeView(flutterView);
-            windowManager = null;
-            stopSelf();
+    private void closeOverlay(MethodChannel.Result result) {
+        try {
+            if (windowManager != null) {
+                windowManager.removeView(flutterView);
+                windowManager = null;
+                stopSelf();
+                result.success(true);
+            }
+            result.success(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.success(false);
         }
     }
 
