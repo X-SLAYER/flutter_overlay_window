@@ -59,9 +59,9 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-      /*  if (windowManager != null) {
-            closeOverlay();
-        } */
+       if (windowManager != null) {
+           return START_STICKY;
+        }
         Log.d("onStartCommand", "Service started");
         FlutterEngine engine = FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG);
         engine.getLifecycleChannel().appIsResumed();
