@@ -23,7 +23,7 @@ class FlutterOverlayWindow {
   /// `height` the overlay height and default is [overlaySizeFill]
   /// `width` the overlay width and default is [overlaySizeFill]
   /// `OverlayAlignment` the alignment postion on screen and default is [OverlayAlignment.center]
-  /// `OverlayFlag` the overlay flag and default is [OverlayFlag.flagNotFocusable]
+  /// `OverlayFlag` the overlay flag and default is [OverlayFlag.defaultFlag]
   /// `overlayTitle` the notification message and default is "overlay activated"
   /// `overlayContent` the notification message
   /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
@@ -31,7 +31,7 @@ class FlutterOverlayWindow {
     int height = _defaultHeight,
     int width = _defaultWidth,
     OverlayAlignment alignment = OverlayAlignment.center,
-    OverlayFlag flag = OverlayFlag.flagNotFocusable,
+    OverlayFlag flag = OverlayFlag.defaultFlag,
     String overlayTitle = "overlay activated",
     String? overlayContent,
     bool enableDrag = false,
@@ -116,14 +116,28 @@ enum OverlayAlignment {
 enum OverlayFlag {
   /// Window flag: this window can never receive touch events.
   /// Usefull if you want to display click-through overlay
-  /// wrap you overlay widget with [IgnorePointer] if you want to use this.
+  @Deprecated('Use "clickThrough" instead.')
   flagNotTouchable,
 
   /// Window flag: this window won't ever get key input focus
   /// so the user can not send key or other button events to it.
+  @Deprecated('Use "defaultFlag" instead.')
   flagNotFocusable,
 
   /// Window flag: allow any pointer events outside of the window to be sent to the windows behind it.
   /// Usefull when you want to use fields that show keyboards.
+  @Deprecated('Use "focusPointer" instead.')
   flagNotTouchModal,
+
+  /// Window flag: this window can never receive touch events.
+  /// Usefull if you want to display click-through overlay
+  clickThrough,
+
+  /// Window flag: this window can never receive touch events.
+  /// Usefull if you want to display click-through overlay
+  defaultFlag,
+
+  /// Window flag: allow any pointer events outside of the window to be sent to the windows behind it.
+  /// Usefull when you want to use fields that show keyboards.
+  focusPointer,
 }

@@ -3,14 +3,14 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
-class TestOverlay extends StatefulWidget {
-  const TestOverlay({Key? key}) : super(key: key);
+class TextFieldOverlay extends StatefulWidget {
+  const TextFieldOverlay({Key? key}) : super(key: key);
 
   @override
-  State<TestOverlay> createState() => _TestOverlayState();
+  State<TextFieldOverlay> createState() => _TextFieldOverlayState();
 }
 
-class _TestOverlayState extends State<TestOverlay> {
+class _TextFieldOverlayState extends State<TextFieldOverlay> {
   @override
   void initState() {
     super.initState();
@@ -24,9 +24,9 @@ class _TestOverlayState extends State<TestOverlay> {
     return Focus(
       onFocusChange: (hasFocus) async {
         if (hasFocus) {
-          await FlutterOverlayWindow.updateFlag(OverlayFlag.flagNotTouchModal);
+          await FlutterOverlayWindow.updateFlag(OverlayFlag.focusPointer);
         } else {
-          await FlutterOverlayWindow.updateFlag(OverlayFlag.flagNotFocusable);
+          await FlutterOverlayWindow.updateFlag(OverlayFlag.defaultFlag);
         }
       },
       child: Scaffold(

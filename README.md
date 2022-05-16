@@ -65,7 +65,7 @@ void overlayMain() {
  /// `height` the overlay height and default is [overlaySizeFill]
  /// `width` the overlay width and default is [overlaySizeFill]
  /// `OverlayAlignment` the alignment postion on screen and default is [OverlayAlignment.center]
- /// `OverlayFlag` the overlay flag and default is [OverlayFlag.flagNotFocusable]
+ /// `OverlayFlag` the overlay flag and default is [OverlayFlag.clickThrough]
  /// `overlayTitle` the notification message and default is "overlay activated"
  /// `overlayContent` the notification message
  /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
@@ -82,8 +82,8 @@ void overlayMain() {
       log("Current Event: $event");
     });
 
- /// use [OverlayFlag.flagNotTouchModal] when you want to use fields that show keyboards
- await FlutterOverlayWindow.showOverlay(flag: OverlayFlag.flagNotTouchModal);
+ /// use [OverlayFlag.focusPointer] when you want to use fields that show keyboards
+ await FlutterOverlayWindow.showOverlay(flag: OverlayFlag.focusPointer);
 
 ```
 

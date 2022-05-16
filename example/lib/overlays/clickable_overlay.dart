@@ -15,11 +15,9 @@ class _ClickableOverlayState extends State<ClickableOverlay> {
     return Material(
       color: Colors.transparent,
       elevation: 0.0,
-      child: IgnorePointer(
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          color: color.withOpacity(0.25),
-        ),
+      child: Container(
+        height: MediaQuery.of(context).size.height,
+        color: color.withOpacity(0.25),
       ),
     );
   }
