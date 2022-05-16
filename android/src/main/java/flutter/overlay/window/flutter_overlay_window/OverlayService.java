@@ -104,7 +104,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 windowManager.removeView(flutterView);
                 windowManager = null;
                 stopSelf();
-                result.success(true);
             }
             result.success(true);
         } catch (Exception e) {
