@@ -133,8 +133,8 @@ enum OverlayFlag {
   /// Usefull if you want to display click-through overlay
   clickThrough,
 
-  /// Window flag: this window can never receive touch events.
-  /// Usefull if you want to display click-through overlay
+  /// Window flag: this window won't ever get key input focus
+  /// so the user can not send key or other button events to it.
   defaultFlag,
 
   /// Window flag: allow any pointer events outside of the window to be sent to the windows behind it.

@@ -25,3 +25,7 @@
 ## 0.2.8
 
 - change overlay flags names
+
+## 0.2.8
+
+- fix closing overlay

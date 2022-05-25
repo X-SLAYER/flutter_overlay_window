@@ -5,7 +5,7 @@ Flutter plugin for displaying your flutter app over other apps on the screen
 
 ## Preview
 
-|TrueCaller overlay exemple	| clickable overlay exemple|
+|TrueCaller overlay exemple	| click-through overlay exemple|
 |:------------:|:------------:|
 |![truecaller](https://user-images.githubusercontent.com/22800380/165636217-8957396b-dc54-4e6d-aa50-e8bfdb9383cf.gif)|![clickable](https://user-images.githubusercontent.com/22800380/165636120-dcd9ee13-5fca-4f8a-a562-b2f53c0b5e24.gif)|
 
@@ -65,7 +65,7 @@ void overlayMain() {
  /// `height` the overlay height and default is [overlaySizeFill]
  /// `width` the overlay width and default is [overlaySizeFill]
  /// `OverlayAlignment` the alignment postion on screen and default is [OverlayAlignment.center]
- /// `OverlayFlag` the overlay flag and default is [OverlayFlag.clickThrough]
+ /// `OverlayFlag` the overlay flag and default is [OverlayFlag.defaultFlag]
  /// `overlayTitle` the notification message and default is "overlay activated"
  /// `overlayContent` the notification message
  /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
@@ -84,6 +84,29 @@ void overlayMain() {
 
  /// use [OverlayFlag.focusPointer] when you want to use fields that show keyboards
  await FlutterOverlayWindow.showOverlay(flag: OverlayFlag.focusPointer);
+
+
+ /// update the overlay flag while the overlay in action
+ await FlutterOverlayWindow.updateFlag(OverlayFlag.defaultFlag);
+
+```
+
+``` dart
+
+enum OverlayFlag {
+  /// Window flag: this window can never receive touch events.
+  /// Usefull if you want to display click-through overlay
+  clickThrough,
+
+  /// Window flag: this window won't ever get key input focus
+  /// so the user can not send key or other button events to it.
+  defaultFlag,
+
+  /// Window flag: allow any pointer events outside of the window to be sent to the windows behind it.
+  /// Usefull when you want to use fields that show keyboards.
+  focusPointer,
+}
+
 
 ```
 
