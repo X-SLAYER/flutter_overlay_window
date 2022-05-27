@@ -48,6 +48,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 10.0),
             TextButton(
               onPressed: () async {
+                if (await FlutterOverlayWindow.isActive()) return;
                 await FlutterOverlayWindow.showOverlay(
                   height: 500,
                   enableDrag: true,

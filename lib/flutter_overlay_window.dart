@@ -96,9 +96,9 @@ class FlutterOverlayWindow {
   }
 
   /// Check if the current overlay is active
-  static Future<bool?> isActive() async {
+  static Future<bool> isActive() async {
     final bool? _res = await _channel.invokeMethod<bool?>('isOverlayActive');
-    return _res;
+    return _res ?? false;
   }
 
   /// Dispose overlay stream
