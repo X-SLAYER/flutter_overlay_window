@@ -26,6 +26,7 @@
 
 - change overlay flags names
 
-## 0.2.8
+## 0.2.9
 
 - fix closing overlay
+- possibility to check if the overlay is active or not

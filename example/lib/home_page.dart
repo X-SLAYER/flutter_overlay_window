@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -50,6 +49,7 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () async {
                 await FlutterOverlayWindow.showOverlay(
+                  height: 500,
                   enableDrag: true,
                   overlayTitle: "X-SLAYER",
                   flag: OverlayFlag.focusPointer,
@@ -68,9 +68,10 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 10.0),
             TextButton(
               onPressed: () async {
-                FlutterOverlayWindow.shareData(jsonEncode({"Hey": "Okay"}));
+                final status = await FlutterOverlayWindow.isActive();
+                log("Is Active?: $status");
               },
-              child: const Text("Share Data"),
+              child: const Text("Is Active?"),
             ),
           ],
         ),

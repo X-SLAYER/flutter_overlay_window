@@ -47,7 +47,7 @@ class FlutterOverlayWindow {
     });
   }
 
-  /// check if overlay permission is granted
+  /// Check if overlay permission is granted
   static Future<bool> isPermissionGranted() async {
     try {
       return await _channel.invokeMethod<bool>('checkPermission') ?? false;
@@ -57,7 +57,7 @@ class FlutterOverlayWindow {
     }
   }
 
-  /// request overlay permission
+  /// Request overlay permission
   /// it will open the overlay settings page and return `true` once the permission granted.
   static Future<bool?> requestPermission() async {
     try {
@@ -68,18 +68,18 @@ class FlutterOverlayWindow {
     }
   }
 
-  /// closes overlay if open
+  /// Closes overlay if open
   static Future<bool?> closeOverlay() async {
     final bool? _res = await _overlayChannel.invokeMethod('close');
     return _res;
   }
 
-  /// broadcast data to and from overlay app
+  /// Broadcast data to and from overlay app
   static Future shareData(dynamic data) async {
     return await _overlayMessageChannel.send(data);
   }
 
-  /// streams message shared between overlay and main app
+  /// Streams message shared between overlay and main app
   static Stream<dynamic> get overlayListener {
     _overlayMessageChannel.setMessageHandler((message) async {
       _controller.add(message);
@@ -88,19 +88,26 @@ class FlutterOverlayWindow {
     return _controller.stream;
   }
 
-  /// update the overlay flag while the overlay in action
+  /// Update the overlay flag while the overlay in action
   static Future<bool?> updateFlag(OverlayFlag flag) async {
     final bool? _res = await _overlayChannel
         .invokeMethod<bool?>('updateFlag', {'flag': flag.name});
     return _res;
   }
 
-  /// dispose overlay stream
+  /// Check if the current overlay is active
+  static Future<bool?> isActive() async {
+    final bool? _res = await _channel.invokeMethod<bool?>('isOverlayActive');
+    return _res;
+  }
+
+  /// Dispose overlay stream
   static void disposeOverlayListener() {
     _controller.close();
   }
 }
 
+// Placement of overlay within the screen.
 enum OverlayAlignment {
   topLeft,
   topCenter,
