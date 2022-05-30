@@ -50,10 +50,9 @@ class _HomePageState extends State<HomePage> {
               onPressed: () async {
                 if (await FlutterOverlayWindow.isActive()) return;
                 await FlutterOverlayWindow.showOverlay(
-                  height: 500,
                   enableDrag: true,
                   overlayTitle: "X-SLAYER",
-                  flag: OverlayFlag.focusPointer,
+                  flag: OverlayFlag.clickThrough,
                   alignment: OverlayAlignment.center,
                 );
 

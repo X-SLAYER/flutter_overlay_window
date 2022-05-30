@@ -8,7 +8,7 @@ class ClickableOverlay extends StatefulWidget {
 }
 
 class _ClickableOverlayState extends State<ClickableOverlay> {
-  Color color = const Color(0xFFFFD580);
+  Color color = const Color(0xFFD69132);
 
   @override
   Widget build(BuildContext context) {

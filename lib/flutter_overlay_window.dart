@@ -20,8 +20,8 @@ class FlutterOverlayWindow {
   /// Open overLay content
   ///
   /// - Optional arguments:
-  /// `height` the overlay height and default is [overlaySizeFill]
-  /// `width` the overlay width and default is [overlaySizeFill]
+  /// `height` the overlay height and default is [_defaultHeight]
+  /// `width` the overlay width and default is [_defaultWidth]
   /// `OverlayAlignment` the alignment postion on screen and default is [OverlayAlignment.center]
   /// `OverlayFlag` the overlay flag and default is [OverlayFlag.defaultFlag]
   /// `overlayTitle` the notification message and default is "overlay activated"

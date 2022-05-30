@@ -42,6 +42,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private int originalXPos;
     private int originalYPos;
     private boolean moving;
+    private static final float MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER = 0.8f;
 
     @Nullable
     @Override
@@ -90,8 +91,13 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 WindowSetup.height,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowSetup.flag,
-                PixelFormat.TRANSPARENT
+                PixelFormat.TRANSLUCENT
         );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Setting maximum opacity allowed for touch events to other apps for Android 12 and
+            // higher to prevent non interaction when using other apps with the popup player
+            params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER;
+        }
         params.gravity = WindowSetup.gravity;
         flutterView.setOnTouchListener(this);
         windowManager.addView(flutterView, params);
