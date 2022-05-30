@@ -22,7 +22,8 @@ class FlutterOverlayWindow {
   /// - Optional arguments:
   /// `height` the overlay height and default is [_defaultHeight]
   /// `width` the overlay width and default is [_defaultWidth]
-  /// `OverlayAlignment` the alignment postion on screen and default is [OverlayAlignment.center]
+  /// `alignment` the alignment postion on screen and default is [OverlayAlignment.center]
+  /// `visibilitySecret` the detail displayed in notifications on the lock screen and default is [NotificationVisibility.visibilitySecret]
   /// `OverlayFlag` the overlay flag and default is [OverlayFlag.defaultFlag]
   /// `overlayTitle` the notification message and default is "overlay activated"
   /// `overlayContent` the notification message
@@ -31,6 +32,7 @@ class FlutterOverlayWindow {
     int height = _defaultHeight,
     int width = _defaultWidth,
     OverlayAlignment alignment = OverlayAlignment.center,
+    NotificationVisibility visibility = NotificationVisibility.visibilitySecret,
     OverlayFlag flag = OverlayFlag.defaultFlag,
     String overlayTitle = "overlay activated",
     String? overlayContent,
@@ -43,7 +45,8 @@ class FlutterOverlayWindow {
       "flag": flag.name,
       "overlayTitle": overlayTitle,
       "overlayContent": overlayContent,
-      "enableDrag": enableDrag
+      "enableDrag": enableDrag,
+      "notificationVisibility": visibility.name,
     });
   }
 
@@ -147,4 +150,16 @@ enum OverlayFlag {
   /// Window flag: allow any pointer events outside of the window to be sent to the windows behind it.
   /// Usefull when you want to use fields that show keyboards.
   focusPointer,
+}
+
+/// The level of detail displayed in notifications on the lock screen.
+enum NotificationVisibility {
+  /// Show this notification in its entirety on all lockscreens.
+  visibilityPublic,
+
+  /// Do not reveal any part of this notification on a secure lockscreen.
+  visibilitySecret,
+
+  /// Show this notification on all lockscreens, but conceal sensitive or private information on secure lockscreens.
+  visibilityPrivate
 }

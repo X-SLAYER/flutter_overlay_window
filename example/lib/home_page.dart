@@ -54,6 +54,7 @@ class _HomePageState extends State<HomePage> {
                   overlayTitle: "X-SLAYER",
                   flag: OverlayFlag.clickThrough,
                   alignment: OverlayAlignment.center,
+                  visibility: NotificationVisibility.visibilityPrivate,
                 );
 
                 /// call this instead if you want to test clicks over the overlay
@@ -72,6 +73,13 @@ class _HomePageState extends State<HomePage> {
                 log("Is Active?: $status");
               },
               child: const Text("Is Active?"),
+            ),
+            const SizedBox(height: 10.0),
+            TextButton(
+              onPressed: () async {
+                await FlutterOverlayWindow.closeOverlay();
+              },
+              child: const Text("Close Overlay"),
             ),
           ],
         ),

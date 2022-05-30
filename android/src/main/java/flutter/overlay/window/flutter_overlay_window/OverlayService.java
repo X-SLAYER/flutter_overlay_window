@@ -148,6 +148,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 .setContentText(WindowSetup.overlayContent)
                 .setSmallIcon(notifyIcon == 0 ? R.drawable.notification_icon : notifyIcon)
                 .setContentIntent(pendingIntent)
+                .setVisibility(WindowSetup.notificationVisibility)
                 .build();
         startForeground(OverlayConstants.NOTIFICATION_ID, notification);
     }
