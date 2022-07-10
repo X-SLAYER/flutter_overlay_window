@@ -12,6 +12,7 @@ class ClickableOverlay extends StatefulWidget {
 
 class _ClickableOverlayState extends State<ClickableOverlay> {
   Color color = const Color(0xFFD69132);
+  BoxShape containerShape = BoxShape.rectangle;
 
   @override
   void initState() {
@@ -19,7 +20,7 @@ class _ClickableOverlayState extends State<ClickableOverlay> {
     FlutterOverlayWindow.overlayListener.listen((event) {
       log('$event');
       switch (event.toString().toLowerCase()) {
-        case 'share':
+        case 'update':
           FlutterOverlayWindow.updateFlag(OverlayFlag.clickThrough);
           break;
         default:
@@ -27,14 +28,36 @@ class _ClickableOverlayState extends State<ClickableOverlay> {
     });
   }
 
+  Future<void> autoResize() async {
+    if (containerShape == BoxShape.rectangle) {
+      await FlutterOverlayWindow.resizeOverlay(
+          (MediaQuery.of(context).size.width * 0.1).toInt(),
+          (MediaQuery.of(context).size.height * 0.25).toInt());
+      setState(() {
+        containerShape = BoxShape.circle;
+      });
+    } else {
+      await FlutterOverlayWindow.resizeOverlay(matchParent, matchParent);
+      setState(() {
+        containerShape = BoxShape.rectangle;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       elevation: 0.0,
-      child: Container(
-        height: MediaQuery.of(context).size.height,
-        color: color.withOpacity(0.25),
+      child: GestureDetector(
+        onTap: () async {
+          await autoResize();
+        },
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
+              color: color.withOpacity(0.25), shape: containerShape),
+        ),
       ),
     );
   }

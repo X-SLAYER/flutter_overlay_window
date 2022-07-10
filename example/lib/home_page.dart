@@ -55,16 +55,9 @@ class _HomePageState extends State<HomePage> {
                   overlayTitle: "X-SLAYER",
                   overlayContent: 'Overlay Enabled',
                   flag: OverlayFlag.defaultFlag,
-                  alignment: OverlayAlignment.bottomCenter,
+                  alignment: OverlayAlignment.centerRight,
                   visibility: NotificationVisibility.visibilityPrivate,
                 );
-
-                /// call this instead if you want to test clicks over the overlay
-
-                // await FlutterOverlayWindow.showOverlay(
-                //   overlayMessage: "Night vision activated",
-                //   flag: OverlayFlag.flagNotTouchable,
-                // );
               },
               child: const Text("Show Overlay"),
             ),

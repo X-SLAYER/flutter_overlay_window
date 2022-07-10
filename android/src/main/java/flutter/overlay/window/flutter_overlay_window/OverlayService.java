@@ -39,11 +39,14 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private int clickableFlag = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 
+
     private float offsetX;
     private float offsetY;
     private int originalXPos;
     private int originalYPos;
     private boolean moving;
+    private float lastX, lastY;
+    private boolean dragging;
     private static final float MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER = 0.8f;
 
     @Nullable
@@ -82,16 +85,26 @@ public class OverlayService extends Service implements View.OnTouchListener {
             } else if (call.method.equals("updateFlag")) {
                 String flag = call.argument("flag").toString();
                 updateOverlayFlag(result, flag);
+            } else if (call.method.equals("resizeOverlay")) {
+                int width = call.argument("width");
+                int height = call.argument("height");
+                resizeOverlay(width, height, result);
             }
         });
         overlayMessageChannel.setMessageHandler((message, reply) -> {
             WindowSetup.messenger.send(message);
         });
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        int LAYOUT_TYPE;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LAYOUT_TYPE = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            LAYOUT_TYPE = WindowManager.LayoutParams.TYPE_PHONE;
+        }
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowSetup.width,
                 WindowSetup.height,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                LAYOUT_TYPE,
                 WindowSetup.flag,
                 PixelFormat.TRANSLUCENT
         );
@@ -127,6 +140,18 @@ public class OverlayService extends Service implements View.OnTouchListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && WindowSetup.flag == clickableFlag) {
                 params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER;
             }
+            windowManager.updateViewLayout(flutterView, params);
+            result.success(true);
+        } else {
+            result.success(false);
+        }
+    }
+
+    private void resizeOverlay(int width, int height, MethodChannel.Result result) {
+        if (windowManager != null) {
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
+            params.width = width;
+            params.height = height;
             windowManager.updateViewLayout(flutterView, params);
             result.success(true);
         } else {
@@ -177,35 +202,36 @@ public class OverlayService extends Service implements View.OnTouchListener {
     @Override
     public boolean onTouch(View view, MotionEvent event) {
         if (windowManager != null && WindowSetup.enableDrag) {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                float x = event.getRawX();
-                float y = event.getRawY();
-                moving = false;
-                int[] location = new int[2];
-                flutterView.getLocationOnScreen(location);
-                originalXPos = location[1];
-                originalYPos = location[0];
-                offsetX = originalXPos - x;
-                offsetY = originalYPos - y;
-            } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                float x = event.getRawX();
-                float y = event.getRawY();
-                WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
-                int newX = (int) (offsetX + x);
-                int newY = (int) (offsetY + y);
-                if (Math.abs(newX - originalXPos) < 1 && Math.abs(newY - originalYPos) < 1 && !moving) {
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    dragging = false;
+                    lastX = event.getRawX();
+                    lastY = event.getRawY();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    float dx = event.getRawX() - lastX;
+                    float dy = event.getRawY() - lastY;
+                    if (!dragging && dx * dx + dy * dy < 25) {
+                        return false;
+                    }
+                    lastX = event.getRawX();
+                    lastY = event.getRawY();
+                    int xx = params.x + (int) dx;
+                    int yy = params.y + (int) dy;
+                    params.x = xx;
+                    params.y = yy;
+                    windowManager.updateViewLayout(flutterView, params);
+                    dragging = true;
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    return dragging;
+                default:
                     return false;
-                }
-                params.x = newX;
-                params.y = newY;
-                windowManager.updateViewLayout(flutterView, params);
-                moving = true;
-            } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                return moving;
             }
+            return false;
         }
         return false;
     }
-
-
 }

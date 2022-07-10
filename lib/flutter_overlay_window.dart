@@ -3,8 +3,9 @@ import 'dart:developer';
 
 import 'package:flutter/services.dart';
 
-const int _defaultWidth = -1;
-const int _defaultHeight = -1;
+/// default size when the overlay match the parent size
+/// basically it will take the full screen width and height
+const int matchParent = -1;
 
 class FlutterOverlayWindow {
   FlutterOverlayWindow._();
@@ -20,8 +21,8 @@ class FlutterOverlayWindow {
   /// Open overLay content
   ///
   /// - Optional arguments:
-  /// `height` the overlay height and default is [_defaultHeight]
-  /// `width` the overlay width and default is [_defaultWidth]
+  /// `height` the overlay height and default is [matchParent]
+  /// `width` the overlay width and default is [matchParent]
   /// `alignment` the alignment postion on screen and default is [OverlayAlignment.center]
   /// `visibilitySecret` the detail displayed in notifications on the lock screen and default is [NotificationVisibility.visibilitySecret]
   /// `OverlayFlag` the overlay flag and default is [OverlayFlag.defaultFlag]
@@ -29,8 +30,8 @@ class FlutterOverlayWindow {
   /// `overlayContent` the notification message
   /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
   static Future<void> showOverlay({
-    int height = _defaultHeight,
-    int width = _defaultWidth,
+    int height = matchParent,
+    int width = matchParent,
     OverlayAlignment alignment = OverlayAlignment.center,
     NotificationVisibility visibility = NotificationVisibility.visibilitySecret,
     OverlayFlag flag = OverlayFlag.defaultFlag,
@@ -38,16 +39,19 @@ class FlutterOverlayWindow {
     String? overlayContent,
     bool enableDrag = false,
   }) async {
-    await _channel.invokeMethod('showOverlay', {
-      "height": height,
-      "width": width,
-      "alignment": alignment.name,
-      "flag": flag.name,
-      "overlayTitle": overlayTitle,
-      "overlayContent": overlayContent,
-      "enableDrag": enableDrag,
-      "notificationVisibility": visibility.name,
-    });
+    await _channel.invokeMethod(
+      'showOverlay',
+      {
+        "height": height,
+        "width": width,
+        "alignment": alignment.name,
+        "flag": flag.name,
+        "overlayTitle": overlayTitle,
+        "overlayContent": overlayContent,
+        "enableDrag": enableDrag,
+        "notificationVisibility": visibility.name,
+      },
+    );
   }
 
   /// Check if overlay permission is granted
@@ -95,6 +99,18 @@ class FlutterOverlayWindow {
   static Future<bool?> updateFlag(OverlayFlag flag) async {
     final bool? _res = await _overlayChannel
         .invokeMethod<bool?>('updateFlag', {'flag': flag.name});
+    return _res;
+  }
+
+  /// Update the overlay size in the screen
+  static Future<bool?> resizeOverlay(int width, int height) async {
+    final bool? _res = await _overlayChannel.invokeMethod<bool?>(
+      'resizeOverlay',
+      {
+        'width': width,
+        'height': height,
+      },
+    );
     return _res;
   }
 
