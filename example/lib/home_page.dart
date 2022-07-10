@@ -50,10 +50,12 @@ class _HomePageState extends State<HomePage> {
               onPressed: () async {
                 if (await FlutterOverlayWindow.isActive()) return;
                 await FlutterOverlayWindow.showOverlay(
+                  height: 500,
                   enableDrag: true,
                   overlayTitle: "X-SLAYER",
-                  flag: OverlayFlag.clickThrough,
-                  alignment: OverlayAlignment.center,
+                  overlayContent: 'Overlay Enabled',
+                  flag: OverlayFlag.defaultFlag,
+                  alignment: OverlayAlignment.bottomCenter,
                   visibility: NotificationVisibility.visibilityPrivate,
                 );
 
@@ -77,9 +79,9 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 10.0),
             TextButton(
               onPressed: () async {
-                await FlutterOverlayWindow.closeOverlay();
+                await FlutterOverlayWindow.shareData('update');
               },
-              child: const Text("Close Overlay"),
+              child: const Text("Update Overlay"),
             ),
           ],
         ),
