@@ -31,8 +31,8 @@ class _ClickableOverlayState extends State<ClickableOverlay> {
   Future<void> autoResize() async {
     if (containerShape == BoxShape.rectangle) {
       await FlutterOverlayWindow.resizeOverlay(
-          (MediaQuery.of(context).size.width * 0.1).toInt(),
-          (MediaQuery.of(context).size.height * 0.25).toInt());
+          (MediaQuery.of(context).size.width * .45).toInt(),
+          (MediaQuery.of(context).size.height * .45).toInt());
       setState(() {
         containerShape = BoxShape.circle;
       });
@@ -51,7 +51,8 @@ class _ClickableOverlayState extends State<ClickableOverlay> {
       elevation: 0.0,
       child: GestureDetector(
         onTap: () async {
-          await autoResize();
+          // await autoResize();
+          FlutterOverlayWindow.closeOverlay();
         },
         child: Container(
           height: MediaQuery.of(context).size.height,

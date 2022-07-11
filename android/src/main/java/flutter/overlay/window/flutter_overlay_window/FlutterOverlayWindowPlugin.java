@@ -12,6 +12,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
 
 import io.flutter.FlutterInjector;
 import io.flutter.embedding.engine.FlutterEngine;
@@ -60,9 +61,13 @@ public class FlutterOverlayWindowPlugin implements
         if (call.method.equals("checkPermission")) {
             result.success(checkOverlayPermission());
         } else if (call.method.equals("requestPermission")) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-            intent.setData(Uri.parse("package:" + mActivity.getPackageName()));
-            mActivity.startActivityForResult(intent, REQUEST_CODE_FOR_OVERLAY_PERMISSION);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                intent.setData(Uri.parse("package:" + mActivity.getPackageName()));
+                mActivity.startActivityForResult(intent, REQUEST_CODE_FOR_OVERLAY_PERMISSION);
+            } else {
+                result.success(true);
+            }
         } else if (call.method.equals("showOverlay")) {
             if (!checkOverlayPermission()) {
                 result.error("PERMISSION", "overlay permission is not enabled", null);
@@ -92,21 +97,12 @@ public class FlutterOverlayWindowPlugin implements
             context.startService(intent);
             result.success(null);
         } else if (call.method.equals("isOverlayActive")) {
-            NotificationManager mNotificationManager = null;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                StatusBarNotification[] notifications = mNotificationManager.getActiveNotifications();
-                for (StatusBarNotification notification : notifications) {
-                    if (notification.getId() == OverlayConstants.NOTIFICATION_ID) {
-                        result.success(true);
-                        return;
-                    }
-                }
-            }
-            result.success(false);
+            result.success(OverlayService.isRunning);
+            return;
         } else {
             result.notImplemented();
         }
+
     }
 
     @Override
@@ -153,7 +149,7 @@ public class FlutterOverlayWindowPlugin implements
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return Settings.canDrawOverlays(context);
         }
-        return false;
+        return true;
     }
 
     @Override

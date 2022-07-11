@@ -30,3 +30,7 @@
 
 - fix closing overlay
 - possibility to check if the overlay is active or not
+
+## 0.3.1
+- fix the overlay permission on android versions <= 6
+- add the possibility to resize overlay while it's in action

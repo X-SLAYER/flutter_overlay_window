@@ -55,7 +55,7 @@ class _HomePageState extends State<HomePage> {
                   overlayTitle: "X-SLAYER",
                   overlayContent: 'Overlay Enabled',
                   flag: OverlayFlag.defaultFlag,
-                  alignment: OverlayAlignment.centerRight,
+                  alignment: OverlayAlignment.centerLeft,
                   visibility: NotificationVisibility.visibilityPrivate,
                 );
               },

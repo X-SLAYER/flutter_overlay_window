@@ -2,13 +2,11 @@
 
 Flutter plugin for displaying your flutter app over other apps on the screen
 
-
 ## Preview
 
-|TrueCaller overlay exemple	| click-through overlay exemple|
-|:------------:|:------------:|
-|![truecaller](https://user-images.githubusercontent.com/22800380/165636217-8957396b-dc54-4e6d-aa50-e8bfdb9383cf.gif)|![clickable](https://user-images.githubusercontent.com/22800380/165636120-dcd9ee13-5fca-4f8a-a562-b2f53c0b5e24.gif)|
-
+|                                              TrueCaller overlay exemple                                              |                                            click-through overlay exemple                                            |
+| :------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
+| ![truecaller](https://user-images.githubusercontent.com/22800380/165636217-8957396b-dc54-4e6d-aa50-e8bfdb9383cf.gif) | ![clickable](https://user-images.githubusercontent.com/22800380/165636120-dcd9ee13-5fca-4f8a-a562-b2f53c0b5e24.gif) |
 
 ## Installation
 
@@ -89,9 +87,12 @@ void overlayMain() {
  /// update the overlay flag while the overlay in action
  await FlutterOverlayWindow.updateFlag(OverlayFlag.defaultFlag);
 
+ /// Update the overlay size in the screen
+ await FlutterOverlayWindow.resizeOverlay(80, 120);
+
 ```
 
-``` dart
+```dart
 
 enum OverlayFlag {
   /// Window flag: this window can never receive touch events.
@@ -109,9 +110,3 @@ enum OverlayFlag {
 
 
 ```
-
-## Credits
-this plugin is optimized version from [flutter_overlay_apps](https://pub.dev/packages/flutter_overlay_apps)
-
-
-
