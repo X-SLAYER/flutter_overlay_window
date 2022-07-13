@@ -4,9 +4,9 @@ Flutter plugin for displaying your flutter app over other apps on the screen
 
 ## Preview
 
-|                                              TrueCaller overlay exemple                                              |                                            click-through overlay exemple                                            |
-| :------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
-| ![truecaller](https://user-images.githubusercontent.com/22800380/165636217-8957396b-dc54-4e6d-aa50-e8bfdb9383cf.gif) | ![clickable](https://user-images.githubusercontent.com/22800380/165636120-dcd9ee13-5fca-4f8a-a562-b2f53c0b5e24.gif) |
+|TrueCaller overlay example|click-through overlay example|  Messanger chat-head example |
+| :-:| :-: | :-: |
+| <img src='https://user-images.githubusercontent.com/22800380/165636217-8957396b-dc54-4e6d-aa50-e8bfdb9383cf.gif' height='720' width='410' /> | <img src='https://user-images.githubusercontent.com/22800380/165636120-dcd9ee13-5fca-4f8a-a562-b2f53c0b5e24.gif' height='720' width='410'/> | <img src='https://user-images.githubusercontent.com/22800380/178730917-40f267bb-63a2-4ad3-ba69-f7c1285a1882.gif' height='720' width='410'/> |
 
 ## Installation
 
