@@ -6,7 +6,7 @@ Flutter plugin for displaying your flutter app over other apps on the screen
 
 |TrueCaller overlay example|click-through overlay example|  Messanger chat-head example |
 | :-:| :-: | :-: |
-| <img src='https://user-images.githubusercontent.com/22800380/165636217-8957396b-dc54-4e6d-aa50-e8bfdb9383cf.gif' height='720' width='410' /> | <img src='https://user-images.githubusercontent.com/22800380/165636120-dcd9ee13-5fca-4f8a-a562-b2f53c0b5e24.gif' height='720' width='410'/> | <img src='https://user-images.githubusercontent.com/22800380/178730917-40f267bb-63a2-4ad3-ba69-f7c1285a1882.gif' height='720' width='410'/> |
+| <img src='https://user-images.githubusercontent.com/22800380/165636217-8957396b-dc54-4e6d-aa50-e8bfdb9383cf.gif' height='600' width='410' /> | <img src='https://user-images.githubusercontent.com/22800380/165636120-dcd9ee13-5fca-4f8a-a562-b2f53c0b5e24.gif' height='600' width='410'/> | <img src='https://user-images.githubusercontent.com/22800380/178730917-40f267bb-63a2-4ad3-ba69-f7c1285a1882.gif' height='600' width='410'/> |
 
 ## Installation
 
@@ -67,6 +67,7 @@ void overlayMain() {
  /// `overlayTitle` the notification message and default is "overlay activated"
  /// `overlayContent` the notification message
  /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
+ /// `positionGravity` the overlay postion after drag and default is [PositionGravity.none]
  await FlutterOverlayWindow.showOverlay();
 
  /// closes overlay if open
@@ -107,6 +108,24 @@ enum OverlayFlag {
   /// Usefull when you want to use fields that show keyboards.
   focusPointer,
 }
+
+
+```dart
+
+  /// Type of dragging behavior for the overlay.
+  enum PositionGravity {
+    /// The `PositionGravity.none` will allow the overlay to postioned anywhere on the screen.
+    none,
+
+    /// The `PositionGravity.right` will allow the overlay to stick on the right side of the screen.
+    right,
+
+    /// The `PositionGravity.left` will allow the overlay to stick on the left side of the screen.
+    left,
+
+    /// The `PositionGravity.auto` will allow the overlay to stick either on the left or right side of the screen depending on the overlay position.
+    auto,
+  }
 
 
 ```

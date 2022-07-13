@@ -246,7 +246,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                         windowManager.updateViewLayout(flutterView, params);
                         mTrayTimerTask = new TrayAnimationTimerTask();
                         mTrayAnimationTimer = new Timer();
-                        mTrayAnimationTimer.schedule(mTrayTimerTask, 0, 60);
+                        mTrayAnimationTimer.schedule(mTrayTimerTask, 0, 25);
                     }
                     return dragging;
                 default:

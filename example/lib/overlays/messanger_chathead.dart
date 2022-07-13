@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
-class ClickableOverlay extends StatefulWidget {
-  const ClickableOverlay({Key? key}) : super(key: key);
+class MessangerChatHead extends StatefulWidget {
+  const MessangerChatHead({Key? key}) : super(key: key);
 
   @override
-  State<ClickableOverlay> createState() => _ClickableOverlayState();
+  State<MessangerChatHead> createState() => _MessangerChatHeadState();
 }
 
-class _ClickableOverlayState extends State<ClickableOverlay> {
-  Color color = const Color(0xFFD69132);
+class _MessangerChatHeadState extends State<MessangerChatHead> {
+  Color color = const Color(0xFFFFFFFF);
   BoxShape containerShape = BoxShape.rectangle;
 
   @override
@@ -27,7 +27,7 @@ class _ClickableOverlayState extends State<ClickableOverlay> {
 
   Future<void> autoResize() async {
     if (containerShape == BoxShape.rectangle) {
-      await FlutterOverlayWindow.resizeOverlay(98, 98);
+      await FlutterOverlayWindow.resizeOverlay(130, 130);
       setState(() {
         containerShape = BoxShape.circle;
       });
@@ -47,11 +47,13 @@ class _ClickableOverlayState extends State<ClickableOverlay> {
       child: GestureDetector(
         onTap: () async {
           await autoResize();
-          // FlutterOverlayWindow.closeOverlay();
         },
         child: Container(
           height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(color: color, shape: containerShape),
+          child: const Center(
+            child: FlutterLogo(),
+          ),
         ),
       ),
     );
