@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
@@ -18,7 +16,6 @@ class _ClickableOverlayState extends State<ClickableOverlay> {
   void initState() {
     super.initState();
     FlutterOverlayWindow.overlayListener.listen((event) {
-      log('$event');
       switch (event.toString().toLowerCase()) {
         case 'update':
           FlutterOverlayWindow.updateFlag(OverlayFlag.clickThrough);
@@ -30,9 +27,7 @@ class _ClickableOverlayState extends State<ClickableOverlay> {
 
   Future<void> autoResize() async {
     if (containerShape == BoxShape.rectangle) {
-      await FlutterOverlayWindow.resizeOverlay(
-          (MediaQuery.of(context).size.width * .45).toInt(),
-          (MediaQuery.of(context).size.height * .45).toInt());
+      await FlutterOverlayWindow.resizeOverlay(98, 98);
       setState(() {
         containerShape = BoxShape.circle;
       });
@@ -51,13 +46,12 @@ class _ClickableOverlayState extends State<ClickableOverlay> {
       elevation: 0.0,
       child: GestureDetector(
         onTap: () async {
-          // await autoResize();
-          FlutterOverlayWindow.closeOverlay();
+          await autoResize();
+          // FlutterOverlayWindow.closeOverlay();
         },
         child: Container(
           height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(
-              color: color.withOpacity(0.25), shape: containerShape),
+          decoration: BoxDecoration(color: color, shape: containerShape),
         ),
       ),
     );

@@ -29,6 +29,7 @@ class FlutterOverlayWindow {
   /// `overlayTitle` the notification message and default is "overlay activated"
   /// `overlayContent` the notification message
   /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
+  /// `positionGravity` the overlay postion after drag and default is [PositionGravity.none]
   static Future<void> showOverlay({
     int height = matchParent,
     int width = matchParent,
@@ -38,6 +39,7 @@ class FlutterOverlayWindow {
     String overlayTitle = "overlay activated",
     String? overlayContent,
     bool enableDrag = false,
+    PositionGravity positionGravity = PositionGravity.none,
   }) async {
     await _channel.invokeMethod(
       'showOverlay',
@@ -50,6 +52,7 @@ class FlutterOverlayWindow {
         "overlayContent": overlayContent,
         "enableDrag": enableDrag,
         "notificationVisibility": visibility.name,
+        "positionGravity": positionGravity.name,
       },
     );
   }
@@ -126,7 +129,7 @@ class FlutterOverlayWindow {
   }
 }
 
-// Placement of overlay within the screen.
+/// Placement of overlay within the screen.
 enum OverlayAlignment {
   topLeft,
   topCenter,
@@ -137,6 +140,21 @@ enum OverlayAlignment {
   bottomLeft,
   bottomCenter,
   bottomRight
+}
+
+/// Type of dragging behavior for the overlay.
+enum PositionGravity {
+  /// The `PositionGravity.none` will allow the overlay to postioned anywhere on the screen.
+  none,
+
+  /// The `PositionGravity.right` will allow the overlay to stick on the right side of the screen.
+  right,
+
+  /// The `PositionGravity.left` will allow the overlay to stick on the left side of the screen.
+  left,
+
+  /// The `PositionGravity.auto` will allow the overlay to stick either on the left or right side of the screen depending on the overlay position.
+  auto,
 }
 
 enum OverlayFlag {
