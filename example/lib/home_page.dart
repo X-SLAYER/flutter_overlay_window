@@ -57,6 +57,8 @@ class _HomePageState extends State<HomePage> {
                   alignment: OverlayAlignment.centerLeft,
                   visibility: NotificationVisibility.visibilityPrivate,
                   positionGravity: PositionGravity.auto,
+                  width: 150,
+                  height: 150,
                 );
               },
               child: const Text("Show Overlay"),
@@ -75,6 +77,13 @@ class _HomePageState extends State<HomePage> {
                 await FlutterOverlayWindow.shareData('update');
               },
               child: const Text("Update Overlay"),
+            ),
+            const SizedBox(height: 10.0),
+            TextButton(
+              onPressed: () async {
+                await FlutterOverlayWindow.shareData('close');
+              },
+              child: const Text("Close Overlay"),
             ),
           ],
         ),

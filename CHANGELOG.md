@@ -34,3 +34,5 @@
 ## 0.3.1
 - fix the overlay permission on android versions <= 6
 - add the possibility to resize overlay while it's in action
+## 0.3.2
+- Add the position gravity feature
