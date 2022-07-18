@@ -32,11 +32,16 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
     return Material(
       color: Colors.transparent,
       elevation: 0.0,
-      child: Container(
-        height: MediaQuery.of(context).size.height,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        child: const Center(
-          child: FlutterLogo(),
+      child: GestureDetector(
+        onTap: () async {
+          await FlutterOverlayWindow.closeOverlay();
+        },
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          child: const Center(
+            child: FlutterLogo(),
+          ),
         ),
       ),
     );

@@ -37,6 +37,7 @@ import io.flutter.plugin.common.MethodChannel;
 
 public class OverlayService extends Service implements View.OnTouchListener {
 
+    public static final String INTENT_EXTRA_IS_CLOSE_WINDOW = "IsCloseWindow";
     public static boolean isRunning = false;
     private WindowManager windowManager = null;
     private FlutterView flutterView;
@@ -71,6 +72,16 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        boolean isCloseWindow = intent.getBooleanExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, false);
+        if (isCloseWindow) {
+            if (windowManager != null) {
+                windowManager.removeView(flutterView);
+                windowManager = null;
+                stopSelf();
+            }
+            isRunning = false;
+            return START_STICKY;
+        }
         if (windowManager != null) {
             windowManager.removeView(flutterView);
             windowManager = null;
@@ -87,9 +98,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         flutterView.setFocusableInTouchMode(true);
         flutterView.setBackgroundColor(Color.TRANSPARENT);
         flutterChannel.setMethodCallHandler((call, result) -> {
-            if (call.method.equals("close")) {
-                closeOverlay(result);
-            } else if (call.method.equals("updateFlag")) {
+            if (call.method.equals("updateFlag")) {
                 String flag = call.argument("flag").toString();
                 updateOverlayFlag(result, flag);
             } else if (call.method.equals("resizeOverlay")) {
@@ -119,7 +128,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 WindowSetup.width,
                 WindowSetup.height,
                 LAYOUT_TYPE,
-                WindowSetup.flag,
+                WindowSetup.flag | WindowManager.LayoutParams.FLAG_SECURE | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
                 PixelFormat.TRANSLUCENT
         );
 
@@ -130,20 +139,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
         flutterView.setOnTouchListener(this);
         windowManager.addView(flutterView, params);
         return START_STICKY;
-    }
-
-    private void closeOverlay(MethodChannel.Result result) {
-        try {
-            if (windowManager != null) {
-                windowManager.removeView(flutterView);
-                windowManager = null;
-                stopSelf();
-            }
-            result.success(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-            result.success(false);
-        }
     }
 
     private void updateOverlayFlag(MethodChannel.Result result, String flag) {

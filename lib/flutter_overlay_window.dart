@@ -80,7 +80,7 @@ class FlutterOverlayWindow {
 
   /// Closes overlay if open
   static Future<bool?> closeOverlay() async {
-    final bool? _res = await _overlayChannel.invokeMethod('close');
+    final bool? _res = await _channel.invokeMethod('closeOverlay');
     return _res;
   }
 

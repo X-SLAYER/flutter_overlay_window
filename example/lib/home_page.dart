@@ -80,8 +80,10 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 10.0),
             TextButton(
-              onPressed: () async {
-                await FlutterOverlayWindow.shareData('close');
+              onPressed: () {
+                log('Try to close');
+                FlutterOverlayWindow.closeOverlay()
+                    .then((value) => log('STOPPED: alue: $value'));
               },
               child: const Text("Close Overlay"),
             ),

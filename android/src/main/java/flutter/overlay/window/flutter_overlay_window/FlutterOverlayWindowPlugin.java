@@ -101,6 +101,14 @@ public class FlutterOverlayWindowPlugin implements
         } else if (call.method.equals("isOverlayActive")) {
             result.success(OverlayService.isRunning);
             return;
+        } else if (call.method.equals("closeOverlay")) {
+            if (OverlayService.isRunning) {
+                final Intent i = new Intent(context, OverlayService.class);
+                i.putExtra(OverlayService.INTENT_EXTRA_IS_CLOSE_WINDOW, true);
+                context.startService(i);
+                result.success(true);
+            }
+            return;
         } else {
             result.notImplemented();
         }
