@@ -128,7 +128,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 WindowSetup.width,
                 WindowSetup.height,
                 LAYOUT_TYPE,
-                WindowSetup.flag | WindowManager.LayoutParams.FLAG_SECURE | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
+                WindowSetup.flag | WindowManager.LayoutParams.FLAG_SECURE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 PixelFormat.TRANSLUCENT
         );
 

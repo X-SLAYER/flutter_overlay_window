@@ -14,17 +14,6 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
   @override
   void initState() {
     super.initState();
-    FlutterOverlayWindow.overlayListener.listen((event) {
-      switch (event.toString().toLowerCase()) {
-        case 'update':
-          FlutterOverlayWindow.updateFlag(OverlayFlag.clickThrough);
-          break;
-        case 'close':
-          FlutterOverlayWindow.closeOverlay();
-          break;
-        default:
-      }
-    });
   }
 
   @override
