@@ -57,8 +57,7 @@ class _HomePageState extends State<HomePage> {
                   alignment: OverlayAlignment.centerLeft,
                   visibility: NotificationVisibility.visibilityPrivate,
                   positionGravity: PositionGravity.auto,
-                  width: 150,
-                  height: 150,
+                  height: matchParent,
                 );
               },
               child: const Text("Show Overlay"),

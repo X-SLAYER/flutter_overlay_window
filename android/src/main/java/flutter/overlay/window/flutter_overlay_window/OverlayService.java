@@ -6,6 +6,8 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.app.PendingIntent;
@@ -13,7 +15,10 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -36,6 +41,12 @@ import io.flutter.plugin.common.JSONMessageCodec;
 import io.flutter.plugin.common.MethodChannel;
 
 public class OverlayService extends Service implements View.OnTouchListener {
+    private final int DEFAULT_NAV_BAR_HEIGHT_DP = 48;
+    private final int DEFAULT_STATUS_BAR_HEIGHT_DP = 25;
+
+    private Integer mStatusBarHeight = -1;
+    private Integer mNavigationBarHeight = -1;
+    private Resources mResources;
 
     public static final String INTENT_EXTRA_IS_CLOSE_WINDOW = "IsCloseWindow";
     public static boolean isRunning = false;
@@ -70,8 +81,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
         notificationManager.cancel(OverlayConstants.NOTIFICATION_ID);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        mResources = getApplicationContext().getResources();
         boolean isCloseWindow = intent.getBooleanExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, false);
         if (isCloseWindow) {
             if (windowManager != null) {
@@ -111,12 +124,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             WindowSetup.messenger.send(message);
         });
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        int LAYOUT_TYPE;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            LAYOUT_TYPE = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        } else {
-            LAYOUT_TYPE = WindowManager.LayoutParams.TYPE_PHONE;
-        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             windowManager.getDefaultDisplay().getSize(szWindow);
         } else {
@@ -126,12 +134,15 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowSetup.width,
-                WindowSetup.height,
-                LAYOUT_TYPE,
-                WindowSetup.flag | WindowManager.LayoutParams.FLAG_SECURE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowSetup.height != -1 ? WindowSetup.height : screenHeight(),
+                0,
+                -statusBarHeightPx(),
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
+                WindowSetup.flag | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                        WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT
         );
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && WindowSetup.flag == clickableFlag) {
             params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER;
         }
@@ -141,11 +152,54 @@ public class OverlayService extends Service implements View.OnTouchListener {
         return START_STICKY;
     }
 
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private int screenHeight() {
+        Display display = windowManager.getDefaultDisplay();
+        DisplayMetrics dm = new DisplayMetrics();
+        display.getRealMetrics(dm);
+        return inPortrait() ?
+                dm.heightPixels + statusBarHeightPx() + navigationBarHeightPx()
+                :
+                dm.heightPixels + statusBarHeightPx();
+    }
+
+    private int statusBarHeightPx() {
+        if (mStatusBarHeight == -1) {
+            int statusBarHeightId = mResources.getIdentifier("status_bar_height", "dimen", "android");
+
+            if (statusBarHeightId > 0) {
+                mStatusBarHeight = mResources.getDimensionPixelSize(statusBarHeightId);
+            } else {
+                mStatusBarHeight = dpToPx(DEFAULT_STATUS_BAR_HEIGHT_DP);
+            }
+        }
+
+        return mStatusBarHeight;
+    }
+
+    int navigationBarHeightPx() {
+        if (mNavigationBarHeight == -1) {
+            int navBarHeightId = mResources.getIdentifier("navigation_bar_height", "dimen", "android");
+
+            if (navBarHeightId > 0) {
+                mNavigationBarHeight = mResources.getDimensionPixelSize(navBarHeightId);
+            } else {
+                mNavigationBarHeight = dpToPx(DEFAULT_NAV_BAR_HEIGHT_DP);
+            }
+        }
+
+        return mNavigationBarHeight;
+    }
+
+
     private void updateOverlayFlag(MethodChannel.Result result, String flag) {
         if (windowManager != null) {
             WindowSetup.setFlag(flag);
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
-            params.flags = WindowSetup.flag;
+            params.flags = WindowSetup.flag | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                    WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && WindowSetup.flag == clickableFlag) {
                 params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER;
             }
@@ -208,6 +262,14 @@ public class OverlayService extends Service implements View.OnTouchListener {
         return getApplicationContext().getResources().getIdentifier(String.format("ic_%s", name), resType, getApplicationContext().getPackageName());
     }
 
+    private int dpToPx(int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                Float.parseFloat(dp + ""), mResources.getDisplayMetrics());
+    }
+
+    private boolean inPortrait() {
+        return mResources.getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+    }
 
     @Override
     public boolean onTouch(View view, MotionEvent event) {
