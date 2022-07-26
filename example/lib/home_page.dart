@@ -1,7 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_accessibility_service/flutter_accessibility_service.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+import 'package:flutter_overlay_window/overlay_config.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -18,6 +20,7 @@ class _HomePageState extends State<HomePage> {
     FlutterOverlayWindow.overlayListener.listen((event) {
       log("$event");
     });
+    FlutterAccessibilityService.requestAccessibilityPermission();
   }
 
   @override
@@ -50,14 +53,13 @@ class _HomePageState extends State<HomePage> {
               onPressed: () async {
                 if (await FlutterOverlayWindow.isActive()) return;
                 await FlutterOverlayWindow.showOverlay(
-                  enableDrag: true,
+                  enableDrag: false,
                   overlayTitle: "X-SLAYER",
                   overlayContent: 'Overlay Enabled',
-                  flag: OverlayFlag.defaultFlag,
+                  flag: OverlayFlag.clickThrough,
                   alignment: OverlayAlignment.centerLeft,
                   visibility: NotificationVisibility.visibilityPrivate,
                   positionGravity: PositionGravity.auto,
-                  height: matchParent,
                 );
               },
               child: const Text("Show Overlay"),
