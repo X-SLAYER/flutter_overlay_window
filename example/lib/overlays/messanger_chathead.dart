@@ -10,10 +10,18 @@ class MessangerChatHead extends StatefulWidget {
 
 class _MessangerChatHeadState extends State<MessangerChatHead> {
   Color color = const Color(0xFFFFFFFF);
+  BoxShape shape = BoxShape.rectangle;
 
   @override
   void initState() {
     super.initState();
+    FlutterOverlayWindow.overlayListener.listen((event) {
+      if (event == 'HEY') {
+        // setState(() {
+        //  Update Timer
+        // });
+      }
+    });
   }
 
   @override
@@ -23,11 +31,21 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
       elevation: 0.0,
       child: GestureDetector(
         onTap: () async {
-          await FlutterOverlayWindow.closeOverlay();
+          if (shape == BoxShape.circle) {
+            await FlutterOverlayWindow.resizeOverlay(matchParent, matchParent);
+            setState(() {
+              shape = BoxShape.rectangle;
+            });
+          } else {
+            await FlutterOverlayWindow.resizeOverlay(150, 150);
+            setState(() {
+              shape = BoxShape.circle;
+            });
+          }
         },
         child: Container(
           height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          decoration: BoxDecoration(color: color, shape: shape),
           child: const Center(
             child: FlutterLogo(),
           ),
