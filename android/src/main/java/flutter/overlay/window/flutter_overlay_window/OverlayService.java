@@ -159,13 +159,21 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private void resizeOverlay(int width, int height, MethodChannel.Result result) {
         if (windowManager != null) {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
-            params.width = width;
-            params.height = height;
+            params.width = dipToPx(getBaseContext(),width);
+            params.height = dipToPx(getBaseContext(),height);
             windowManager.updateViewLayout(flutterView, params);
             result.success(true);
         } else {
             result.success(false);
         }
+    }
+    
+     /**
+     * 根据手机分辨率从 dp 单位 转成为 px(像素)
+     */
+    public static int dipToPx(Context context, float dpValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
     }
 
     @Override
