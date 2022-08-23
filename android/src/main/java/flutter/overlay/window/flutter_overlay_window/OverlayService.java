@@ -128,13 +128,15 @@ public class OverlayService extends Service implements View.OnTouchListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             windowManager.getDefaultDisplay().getSize(szWindow);
         } else {
-            int w = windowManager.getDefaultDisplay().getWidth();
-            int h = windowManager.getDefaultDisplay().getHeight();
+            DisplayMetrics displaymetrics = new DisplayMetrics();
+            windowManager.getDefaultDisplay().getMetrics(displaymetrics);
+            int w = displaymetrics.widthPixels;
+            int h = displaymetrics.heightPixels;
             szWindow.set(w, h);
         }
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowSetup.width == -1999 ? -1 : WindowSetup.width,
-                WindowSetup.height != -1999 ? WindowSetup.height : screenHeight(),
+                WindowSetup.height != -1999 ? WindowSetup.width : screenHeight(),
                 0,
                 -statusBarHeightPx(),
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
@@ -204,6 +206,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
                     WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && WindowSetup.flag == clickableFlag) {
                 params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER;
+            } else {
+                params.alpha = 0;
             }
             windowManager.updateViewLayout(flutterView, params);
             result.success(true);
@@ -215,14 +219,15 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private void resizeOverlay(int width, int height, MethodChannel.Result result) {
         if (windowManager != null) {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
-            params.width = width;
-            params.height = height;
+            params.width = (width == -1999 || width == -1) ? -1 : dpToPx(width);
+            params.height = height != 1999 || height != -1 ? dpToPx(height) : height;
             windowManager.updateViewLayout(flutterView, params);
             result.success(true);
         } else {
             result.success(false);
         }
     }
+
 
     @Override
     public void onCreate() {
