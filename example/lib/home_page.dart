@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_accessibility_service/flutter_accessibility_service.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:flutter_overlay_window/overlay_config.dart';
 
@@ -20,7 +19,6 @@ class _HomePageState extends State<HomePage> {
     FlutterOverlayWindow.overlayListener.listen((event) {
       log("$event");
     });
-    FlutterAccessibilityService.requestAccessibilityPermission();
   }
 
   @override
@@ -56,7 +54,7 @@ class _HomePageState extends State<HomePage> {
                   enableDrag: true,
                   overlayTitle: "X-SLAYER",
                   overlayContent: 'Overlay Enabled',
-                  flag: OverlayFlag.defaultFlag,
+                  flag: OverlayFlag.clickThrough,
                   alignment: OverlayAlignment.centerLeft,
                   visibility: NotificationVisibility.visibilityPrivate,
                   positionGravity: PositionGravity.auto,

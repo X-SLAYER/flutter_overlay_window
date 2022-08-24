@@ -207,7 +207,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && WindowSetup.flag == clickableFlag) {
                 params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER;
             } else {
-                params.alpha = 0;
+                params.alpha = 1;
             }
             windowManager.updateViewLayout(flutterView, params);
             result.success(true);

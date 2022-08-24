@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:flutter_overlay_window/overlay_config.dart';
@@ -16,6 +18,10 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
   @override
   void initState() {
     super.initState();
+    Timer.periodic(const Duration(seconds: 10), (timer) async {
+      await FlutterOverlayWindow.updateFlag(OverlayFlag.defaultFlag);
+      timer.cancel();
+    });
   }
 
   @override
@@ -32,8 +38,8 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
             });
           } else {
             await FlutterOverlayWindow.resizeOverlay(
-              WindowSize.fullCover,
-              WindowSize.fullCover,
+              WindowSize.matchParent,
+              WindowSize.matchParent,
             );
             setState(() {
               _currentShape = BoxShape.rectangle;
@@ -43,13 +49,7 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
         child: Container(
             height: MediaQuery.of(context).size.height,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF0F2027),
-                  Color(0xFF203A43),
-                  Color(0xFF2C5364),
-                ],
-              ),
+              color: Colors.white,
               shape: _currentShape,
             ),
             child: const Center(
