@@ -4,9 +4,7 @@ import android.graphics.PixelFormat;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
-
 import androidx.core.app.NotificationCompat;
-
 import io.flutter.plugin.common.BasicMessageChannel;
 
 public abstract class WindowSetup {

@@ -4,8 +4,11 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.app.PendingIntent;
@@ -14,9 +17,19 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.DragEvent;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -38,8 +51,9 @@ import io.flutter.plugin.common.MethodChannel;
 public class OverlayService extends Service implements View.OnTouchListener {
 
     public static final String INTENT_EXTRA_IS_CLOSE_WINDOW = "IsCloseWindow";
-    public static boolean isRunning = false;
+    public static final String TAG = "Overlay Service";
     private WindowManager windowManager = null;
+    public static boolean isRunning = false;
     private FlutterView flutterView;
     private MethodChannel flutterChannel = new MethodChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.OVERLAY_TAG);
     private BasicMessageChannel<Object> overlayMessageChannel = new BasicMessageChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
@@ -54,6 +68,12 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private Point szWindow = new Point();
     private Timer mTrayAnimationTimer;
     private TrayAnimationTimerTask mTrayTimerTask;
+
+
+    private Animation animMoveToTop;
+    private View removeFloatingWidgetView;
+    private ImageView imageIcon;
+    private LinearLayout closeSection;
 
     @Nullable
     @Override
@@ -76,6 +96,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         if (isCloseWindow) {
             if (windowManager != null) {
                 windowManager.removeView(flutterView);
+                windowManager.removeView(removeFloatingWidgetView);
                 windowManager = null;
                 stopSelf();
             }
@@ -84,6 +105,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
         if (windowManager != null) {
             windowManager.removeView(flutterView);
+            windowManager.removeView(removeFloatingWidgetView);
             windowManager = null;
             stopSelf();
         }
@@ -125,8 +147,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
             szWindow.set(w, h);
         }
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowSetup.width,
-                WindowSetup.height,
+                100,
+                100,
                 LAYOUT_TYPE,
                 WindowSetup.flag | WindowManager.LayoutParams.FLAG_SECURE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 PixelFormat.TRANSLUCENT
@@ -135,9 +157,117 @@ public class OverlayService extends Service implements View.OnTouchListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && WindowSetup.flag == clickableFlag) {
             params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER;
         }
+
+
+        flutterView.setTag(OverlayConstants.Flutter_VIEW_TAG);
+
         params.gravity = WindowSetup.gravity;
         flutterView.setOnTouchListener(this);
+
+
+
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+
+        removeFloatingWidgetView = inflater.inflate(R.layout.close_section, null);
+
+
+        imageIcon = (ImageView) removeFloatingWidgetView.findViewById(R.id.imageView);
+
+        closeSection = (LinearLayout) removeFloatingWidgetView.findViewById(R.id.close_section);
+
+        imageIcon.setTag(OverlayConstants.CLOSE_BUTTON_TAG);
+
+
+        // load the animation
+        animMoveToTop = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.close_animation);
+
+        // set animation listener
+        animMoveToTop.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if (animation == animMoveToTop) {
+                    Toast.makeText(getApplicationContext(), "Animation Stopped", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+
+        //Add the view to the window.
+        WindowManager.LayoutParams paramRemove = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                200,
+                LAYOUT_TYPE,
+                WindowSetup.flag | WindowManager.LayoutParams.FLAG_SECURE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT);
+
+        //Specify the view position
+        paramRemove.gravity = Gravity.BOTTOM;
+
+        removeFloatingWidgetView.setVisibility(View.GONE);
+
+
+        windowManager.addView(removeFloatingWidgetView, paramRemove);
         windowManager.addView(flutterView, params);
+
+        imageIcon.setOnDragListener(new View.OnDragListener() {
+            @Override
+            public boolean onDrag(View v, DragEvent event) {
+                switch (event.getAction()) {
+                    case DragEvent.ACTION_DRAG_STARTED:
+
+                        Log.i(TAG, "Action is DragEvent.ACTION_DRAG_STARTED");
+
+                        // Do nothing
+                        break;
+
+                    case DragEvent.ACTION_DRAG_ENTERED:
+                        Log.i(TAG, "Action is DragEvent.ACTION_DRAG_ENTERED");
+                        int x_cord = (int) event.getX();
+                        int y_cord = (int) event.getY();
+                        break;
+
+                    case DragEvent.ACTION_DRAG_EXITED:
+                        Log.i(TAG, "Action is DragEvent.ACTION_DRAG_EXITED");
+                        x_cord = (int) event.getX();
+                        y_cord = (int) event.getY();
+
+                        break;
+
+                    case DragEvent.ACTION_DRAG_LOCATION:
+                        Log.i(TAG, "Action is DragEvent.ACTION_DRAG_LOCATION");
+                        x_cord = (int) event.getX();
+                        y_cord = (int) event.getY();
+                        break;
+
+                    case DragEvent.ACTION_DRAG_ENDED:
+                        Log.i(TAG, "Action is DragEvent.ACTION_DRAG_ENDED");
+
+                        // Do nothing
+                        break;
+
+                    case DragEvent.ACTION_DROP:
+                        Log.i(TAG, "ACTION_DROP event");
+
+                        // Do nothing
+                        break;
+                    default:
+                        break;
+                }
+                return true;
+            }
+        });
+
+
         return START_STICKY;
     }
 
@@ -209,15 +339,41 @@ public class OverlayService extends Service implements View.OnTouchListener {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public boolean onTouch(View view, MotionEvent event) {
         if (windowManager != null && WindowSetup.enableDrag) {
+
+
+            double w = Resources.getSystem().getDisplayMetrics().widthPixels;
+            double h = Resources.getSystem().getDisplayMetrics().heightPixels;
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
+            Log.i(TAG, "onTouch: event.getAction(): " + event.getAction() + " Screen : (" + w + ", " + h);
+
+
             switch (event.getAction()) {
+
+
                 case MotionEvent.ACTION_DOWN:
                     dragging = false;
                     lastX = event.getRawX();
                     lastY = event.getRawY();
+
+
+                    closeSection.setVisibility(View.VISIBLE);
+                    // start the animation
+//                    imageIcon.startAnimation(animMoveToTop);
+
+
+//                    ClipData.Item item = new ClipData.Item((CharSequence)view.getTag());
+//                    String[] mimeTypes = {ClipDescription.MIMETYPE_TEXT_PLAIN};
+//
+//                    ClipData dragData = new ClipData(view.getTag().toString(),mimeTypes, item);
+//                    View.DragShadowBuilder myShadow = new View.DragShadowBuilder(flutterView);
+//
+//                    view.startDrag(dragData,myShadow,null,0);
+
+
                     break;
                 case MotionEvent.ACTION_MOVE:
                     float dx = event.getRawX() - lastX;
@@ -229,20 +385,44 @@ public class OverlayService extends Service implements View.OnTouchListener {
                     lastY = event.getRawY();
                     int xx = params.x + (int) dx;
                     int yy = params.y + (int) dy;
+
+                    Log.i(TAG, "onTouch: last : ( " + lastX + "," + lastY + "  ) flutterView: ( " + xx + "," + yy + " )");
                     params.x = xx;
                     params.y = yy;
                     windowManager.updateViewLayout(flutterView, params);
                     dragging = true;
                     break;
                 case MotionEvent.ACTION_UP:
+
+
+                    // start the animation
+//                    imageIcon.startAnimation(animMoveToTop);
+
                 case MotionEvent.ACTION_CANCEL:
                     lastYPosition = params.y;
-                    if (WindowSetup.positionGravity != "none") {
-                        windowManager.updateViewLayout(flutterView, params);
-                        mTrayTimerTask = new TrayAnimationTimerTask();
-                        mTrayAnimationTimer = new Timer();
-                        mTrayAnimationTimer.schedule(mTrayTimerTask, 0, 25);
+
+                    closeSection.setVisibility(View.GONE);
+
+
+                    if (lastY <= h && lastY >= (h - 200) && ((w/2) - 100) < lastX && ((w/2) + 100) > lastX  ) {
+
+                        if (OverlayService.isRunning) {
+                            Log.i(TAG, "onTouch:ACTION_UP (" + lastX + " , " + lastY + ")");
+                            final Intent i = new Intent(getApplicationContext(), OverlayService.class);
+                            i.putExtra(OverlayService.INTENT_EXTRA_IS_CLOSE_WINDOW, true);
+                            getApplicationContext().startService(i);
+
+                        }
+                    } else {
+                        if (OverlayService.isRunning && WindowSetup.positionGravity != "none") {
+                            windowManager.updateViewLayout(flutterView, params);
+                            mTrayTimerTask = new TrayAnimationTimerTask();
+                            mTrayAnimationTimer = new Timer();
+                            mTrayAnimationTimer.schedule(mTrayTimerTask, 0, 25);
+                        }
                     }
+
+//
                     return dragging;
                 default:
                     return false;
@@ -262,7 +442,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
             mDestY = lastYPosition;
             switch (WindowSetup.positionGravity) {
                 case "auto":
-                    mDestX = (params.x + (flutterView.getWidth() / 2)) <= szWindow.x / 2 ? 0 : szWindow.x - flutterView.getWidth();
+                    mDestX =
+                            (params.x + (flutterView.getWidth() / 2)) <= szWindow.x / 2 ? 0 : szWindow.x - flutterView.getWidth();
                     return;
                 case "left":
                     mDestX = 0;
@@ -282,10 +463,14 @@ public class OverlayService extends Service implements View.OnTouchListener {
             mAnimationHandler.post(() -> {
                 params.x = (2 * (params.x - mDestX)) / 3 + mDestX;
                 params.y = (2 * (params.y - mDestY)) / 3 + mDestY;
-                windowManager.updateViewLayout(flutterView, params);
-                if (Math.abs(params.x - mDestX) < 2 && Math.abs(params.y - mDestY) < 2) {
-                    TrayAnimationTimerTask.this.cancel();
-                    mTrayAnimationTimer.cancel();
+                try {
+                    windowManager.updateViewLayout(flutterView, params);
+                    if (Math.abs(params.x - mDestX) < 2 && Math.abs(params.y - mDestY) < 2) {
+                        TrayAnimationTimerTask.this.cancel();
+                        mTrayAnimationTimer.cancel();
+                    }
+                } catch (Error e) {
+                    e.printStackTrace();
                 }
             });
         }

@@ -9,8 +9,10 @@ class MessangerChatHead extends StatefulWidget {
 }
 
 class _MessangerChatHeadState extends State<MessangerChatHead> {
-  Color color = const Color(0xFFFFFFFF);
+
   BoxShape shape = BoxShape.rectangle;
+
+  bool isExpanded  = false;
 
   @override
   void initState() {
@@ -29,25 +31,36 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
     return Material(
       color: Colors.transparent,
       elevation: 0.0,
-      child: GestureDetector(
-        onTap: () async {
-          if (shape == BoxShape.circle) {
-            await FlutterOverlayWindow.resizeOverlay(matchParent, matchParent);
-            setState(() {
-              shape = BoxShape.rectangle;
-            });
-          } else {
-            await FlutterOverlayWindow.resizeOverlay(150, 150);
-            setState(() {
-              shape = BoxShape.circle;
-            });
-          }
-        },
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(color: color, shape: shape),
-          child: const Center(
-            child: FlutterLogo(),
+      child: Scaffold(
+        body: GestureDetector(
+          onTap: () async {
+            if (shape == BoxShape.circle) {
+              await FlutterOverlayWindow.resizeOverlay(720, 1200);
+              setState(() {
+                shape = BoxShape.rectangle;
+                isExpanded = !isExpanded;
+              });
+            } else {
+              await FlutterOverlayWindow.resizeOverlay(100, 100);
+              setState(() {
+                shape = BoxShape.circle;  isExpanded = !isExpanded;
+              });
+            }
+          },
+          child:isExpanded? Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(color: Color(0xFF1E1E1E),
+
+                shape: shape),
+            child: const Center(
+              child: FlutterLogo(),
+            ),
+          ):Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(shape: shape,color: Color(0xFF1E1E1E)),
+            child: const Center(
+              child: FlutterLogo(),
+            ),
           ),
         ),
       ),

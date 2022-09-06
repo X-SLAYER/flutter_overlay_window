@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    android:id="@+id/close_section"
+    android:background="@drawable/remove_background"
+    android:orientation="vertical"
+    android:gravity="center"
+    >
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:background="@drawable/button_shap"
+        android:backgroundTint="@android:color/darker_gray"
+        android:padding="6dp"
+        android:src="@drawable/ic_close" />
+
+</LinearLayout>
