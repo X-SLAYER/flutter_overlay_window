@@ -291,12 +291,27 @@ public class OverlayService extends Service implements View.OnTouchListener {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
             params.width = width;
             params.height = height;
+
+                params.x = 0;
+
             windowManager.updateViewLayout(flutterView, params);
             result.success(true);
         } else {
             result.success(false);
         }
     }
+//
+//    private void setDraggingOverlay(boolean value, MethodChannel.Result result) {
+//        if (windowManager != null) {
+//            WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
+//            params.x = width;
+//            params.height = height;
+//            windowManager.updateViewLayout(flutterView, params);
+//            result.success(true);
+//        } else {
+//            result.success(false);
+//        }
+//    }
 
     @Override
     public void onCreate() {

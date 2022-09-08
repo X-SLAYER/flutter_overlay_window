@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
@@ -111,7 +112,23 @@ public class FlutterOverlayWindowPlugin implements
                 result.success(true);
             }
             return;
-        } else {
+        } else if (call.method.equals("setDragging")) {
+            boolean enableDrag = call.argument("enableDrag");
+            WindowSetup.enableDrag = enableDrag;
+
+            result.success(null);
+            return;
+        } else if (call.method.equals("getWidth")) {
+            double w = Resources.getSystem().getDisplayMetrics().widthPixels;
+            result.success(w);
+            return;
+        }
+        else if (call.method.equals("getHeight")) {
+            double h = Resources.getSystem().getDisplayMetrics().heightPixels;
+            result.success(h);
+            return;
+        }
+        else {
             result.notImplemented();
         }
 

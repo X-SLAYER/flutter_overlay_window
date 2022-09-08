@@ -24,6 +24,7 @@ dependencies:
   simple_animations: ^4.0.2
   supercharged: ^2.1.1
   flutter_app_version_checker: ^0.0.3
+  flutter_fortune_wheel: ^1.1.0
   flutter_overlay_window:
     path: ../
 

@@ -117,6 +117,28 @@ class FlutterOverlayWindow {
     return _res;
   }
 
+  static Future<double?> getWidthDevice() async {
+    final double? _res = await _channel.invokeMethod<double?>(
+      'getWidth'
+    );
+    return _res;
+  }
+
+  static Future<bool?> setDragging(bool dragging) async {
+    final bool? _res = await _channel.invokeMethod<bool?>(
+      'setDragging',{
+      'enableDrag': dragging,
+    },
+    );
+    return _res;
+  }
+  static Future<double?> getHeightDevice() async {
+    final double? _res = await _channel.invokeMethod<double?>(
+      'getHeight'
+    );
+    return _res;
+  }
+
   /// Check if the current overlay is active
   static Future<bool> isActive() async {
     final bool? _res = await _channel.invokeMethod<bool?>('isOverlayActive');
