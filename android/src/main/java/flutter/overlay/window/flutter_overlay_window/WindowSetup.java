@@ -1,7 +1,6 @@
 package flutter.overlay.window.flutter_overlay_window;
 
-import android.graphics.PixelFormat;
-import android.util.Log;
+
 import android.view.Gravity;
 import android.view.WindowManager;
 
