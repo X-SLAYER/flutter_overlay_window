@@ -36,3 +36,9 @@
 - add the possibility to resize overlay while it's in action
 ## 0.3.2
 - Add the position gravity feature
+
+## 0.3.3
+- Fix bugs related to android 12 +
+- Some code optimizations
+- Fix overlay popout on top of statusbar
+- Fix overlay closing
