@@ -7,5 +7,7 @@ final public class OverlayConstants {
     static final String OVERLAY_TAG = "x-slayer/overlay";
     static final String MESSENGER_TAG = "x-slayer/overlay_messenger";
     static final String CHANNEL_ID = "Overlay Channel";
+    static final String Flutter_VIEW_TAG = "flutter view";
+    static final String CLOSE_BUTTON_TAG = "close button";
     static final int NOTIFICATION_ID = 4579;
 }

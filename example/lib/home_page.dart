@@ -85,6 +85,25 @@ class _HomePageState extends State<HomePage> {
               },
               child: const Text("Close Overlay"),
             ),
+            const SizedBox(height: 10.0),
+            TextButton(
+              onPressed: () {
+                log('Get Width');
+                FlutterOverlayWindow.getWidthDevice()
+                    .then((value) => log('STOPPED: alue: $value'));
+              },
+              child: const Text("Get Width"),
+            ),
+
+            const SizedBox(height: 10.0),
+            TextButton(
+              onPressed: () {
+                log('Get Height');
+                FlutterOverlayWindow.getHeightDevice()
+                    .then((value) => log('STOPPED: alue: $value'));
+              },
+              child: const Text("Get Height"),
+            ),
           ],
         ),
       ),
