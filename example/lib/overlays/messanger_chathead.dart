@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+import 'package:flutter_overlay_window/overlay_config.dart';
 
 class MessangerChatHead extends StatefulWidget {
   const MessangerChatHead({Key? key}) : super(key: key);
@@ -10,7 +13,7 @@ class MessangerChatHead extends StatefulWidget {
 
 class _MessangerChatHeadState extends State<MessangerChatHead> {
   Color color = const Color(0xFFFFFFFF);
-  BoxShape shape = BoxShape.rectangle;
+  BoxShape _currentShape = BoxShape.rectangle;
 
   @override
   void initState() {
@@ -31,25 +34,30 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
       elevation: 0.0,
       child: GestureDetector(
         onTap: () async {
-          if (shape == BoxShape.circle) {
-            await FlutterOverlayWindow.resizeOverlay(matchParent, matchParent);
+          if (_currentShape == BoxShape.rectangle) {
+            await FlutterOverlayWindow.resizeOverlay(50, 100);
             setState(() {
-              shape = BoxShape.rectangle;
+              _currentShape = BoxShape.circle;
             });
           } else {
-            await FlutterOverlayWindow.resizeOverlay(150, 150);
+            await FlutterOverlayWindow.resizeOverlay(
+              WindowSize.matchParent,
+              WindowSize.matchParent,
+            );
             setState(() {
-              shape = BoxShape.circle;
+              _currentShape = BoxShape.rectangle;
             });
           }
         },
         child: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(color: color, shape: shape),
-          child: const Center(
-            child: FlutterLogo(),
-          ),
-        ),
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: _currentShape,
+            ),
+            child: const Center(
+              child: FlutterLogo(),
+            )),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+import 'package:flutter_overlay_window/overlay_config.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -55,8 +56,10 @@ class _HomePageState extends State<HomePage> {
                   overlayContent: 'Overlay Enabled',
                   flag: OverlayFlag.defaultFlag,
                   alignment: OverlayAlignment.centerLeft,
-                  visibility: NotificationVisibility.visibilityPrivate,
-                  positionGravity: PositionGravity.auto,
+                  visibility: NotificationVisibility.visibilityPublic,
+                  positionGravity: PositionGravity.left,
+                  height: WindowSize.fullCover,
+                  width: WindowSize.fullCover,
                 );
               },
               child: const Text("Show Overlay"),
