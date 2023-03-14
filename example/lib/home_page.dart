@@ -51,15 +51,15 @@ class _HomePageState extends State<HomePage> {
               onPressed: () async {
                 if (await FlutterOverlayWindow.isActive()) return;
                 await FlutterOverlayWindow.showOverlay(
-                  enableDrag: false,
+                  enableDrag: true,
                   overlayTitle: "X-SLAYER",
                   overlayContent: 'Overlay Enabled',
                   flag: OverlayFlag.defaultFlag,
                   alignment: OverlayAlignment.centerLeft,
-                  visibility: NotificationVisibility.visibilityPrivate,
-                  positionGravity: PositionGravity.auto,
-                  height: WindowSize.matchParent,
-                  width: WindowSize.matchParent,
+                  visibility: NotificationVisibility.visibilityPublic,
+                  positionGravity: PositionGravity.left,
+                  height: WindowSize.fullCover,
+                  width: WindowSize.fullCover,
                 );
               },
               child: const Text("Show Overlay"),
