@@ -90,6 +90,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             if (windowManager != null) {
                 windowManager.removeView(flutterView);
                 windowManager = null;
+                flutterView.detachFromFlutterEngine();
                 stopSelf();
             }
             isRunning = false;
@@ -98,6 +99,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         if (windowManager != null) {
             windowManager.removeView(flutterView);
             windowManager = null;
+            flutterView.detachFromFlutterEngine();
             stopSelf();
         }
         isRunning = true;
