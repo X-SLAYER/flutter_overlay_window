@@ -18,9 +18,12 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
   @override
   void initState() {
     super.initState();
-    Timer.periodic(const Duration(seconds: 10), (timer) async {
-      await FlutterOverlayWindow.updateFlag(OverlayFlag.defaultFlag);
-      timer.cancel();
+    FlutterOverlayWindow.overlayListener.listen((event) {
+      if (event == 'HEY') {
+        // setState(() {
+        //  Update Timer
+        // });
+      }
     });
   }
 
