@@ -3,8 +3,7 @@ import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_overlay_window/flutter_overlay_window.dart';
-import 'package:flutter_overlay_window/overlay_config.dart';
+import 'package:flutter_overlay_window/main.dart';
 
 class MessangerChatHead extends StatefulWidget {
   const MessangerChatHead({Key? key}) : super(key: key);

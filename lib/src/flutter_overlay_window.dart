@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/services.dart';
-import 'package:flutter_overlay_window/overlay_config.dart';
+import 'package:flutter_overlay_window/src/overlay_config.dart';
 
 class FlutterOverlayWindow {
   FlutterOverlayWindow._();
