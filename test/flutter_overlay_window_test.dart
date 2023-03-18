@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_overlay_window/main.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
