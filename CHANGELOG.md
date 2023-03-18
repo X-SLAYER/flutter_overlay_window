@@ -42,3 +42,8 @@
 - Some code optimizations
 - Fix overlay popout on top of statusbar
 - Fix overlay closing
+
+## 0.4.1
+- Remove secure flag
+- Detach view from engine after clsoing
+- Fix Example to show (Sending data between Main & overlay)

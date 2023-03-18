@@ -1,4 +1,6 @@
-import 'dart:async';
+import 'dart:developer';
+import 'dart:isolate';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
@@ -13,17 +15,27 @@ class MessangerChatHead extends StatefulWidget {
 
 class _MessangerChatHeadState extends State<MessangerChatHead> {
   Color color = const Color(0xFFFFFFFF);
-  BoxShape _currentShape = BoxShape.rectangle;
+  BoxShape _currentShape = BoxShape.circle;
+  static const String _kPortNameOverlay = 'OVERLAY';
+  static const String _kPortNameHome = 'UI';
+  final _receivePort = ReceivePort();
+  SendPort? homePort;
+  String? messageFromOverlay;
 
   @override
   void initState() {
     super.initState();
-    FlutterOverlayWindow.overlayListener.listen((event) {
-      if (event == 'HEY') {
-        // setState(() {
-        //  Update Timer
-        // });
-      }
+    if (homePort != null) return;
+    final res = IsolateNameServer.registerPortWithName(
+      _receivePort.sendPort,
+      _kPortNameOverlay,
+    );
+    log("$res : HOME");
+    _receivePort.listen((message) {
+      log("message from UI: $message");
+      setState(() {
+        messageFromOverlay = 'message from UI: $message';
+      });
     });
   }
 
@@ -50,14 +62,42 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
           }
         },
         child: Container(
-            height: MediaQuery.of(context).size.height,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: _currentShape,
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: _currentShape,
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _currentShape == BoxShape.rectangle
+                    ? SizedBox(
+                        width: 200.0,
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.black,
+                          ),
+                          onPressed: () {
+                            homePort ??= IsolateNameServer.lookupPortByName(
+                              _kPortNameHome,
+                            );
+                            homePort?.send('Date: ${DateTime.now()}');
+                          },
+                          child: const Text("Send message to UI"),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+                _currentShape == BoxShape.rectangle
+                    ? messageFromOverlay == null
+                        ? const FlutterLogo()
+                        : Text(messageFromOverlay ?? '')
+                    : const FlutterLogo()
+              ],
             ),
-            child: const Center(
-              child: FlutterLogo(),
-            )),
+          ),
+        ),
       ),
     );
   }
