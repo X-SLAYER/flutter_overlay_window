@@ -138,7 +138,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowSetup.width == -1999 ? -1 : WindowSetup.width,
-                WindowSetup.height != -1999 ? WindowSetup.width : screenHeight(),
+                WindowSetup.height != -1999 ? WindowSetup.height : screenHeight(),
                 0,
                 -statusBarHeightPx(),
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
@@ -313,7 +313,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                         mTrayAnimationTimer = new Timer();
                         mTrayAnimationTimer.schedule(mTrayTimerTask, 0, 25);
                     }
-                    return dragging;
+                    return false;
                 default:
                     return false;
             }

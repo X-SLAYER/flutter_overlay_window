@@ -70,11 +70,10 @@ class _HomePageState extends State<HomePage> {
                   overlayTitle: "X-SLAYER",
                   overlayContent: 'Overlay Enabled',
                   flag: OverlayFlag.defaultFlag,
-                  alignment: OverlayAlignment.centerLeft,
                   visibility: NotificationVisibility.visibilityPublic,
                   positionGravity: PositionGravity.auto,
-                  height: WindowSize.fullCover,
-                  width: WindowSize.fullCover,
+                  height: 500,
+                  width: WindowSize.matchParent,
                 );
               },
               child: const Text("Show Overlay"),
