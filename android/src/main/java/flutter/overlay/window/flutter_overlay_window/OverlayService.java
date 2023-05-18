@@ -19,6 +19,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -297,8 +298,14 @@ public class OverlayService extends Service implements View.OnTouchListener {
                     }
                     lastX = event.getRawX();
                     lastY = event.getRawY();
-                    int xx = params.x + (int) dx;
-                    int yy = params.y + (int) dy;
+                    boolean invertX = WindowSetup.gravity == (Gravity.TOP | Gravity.RIGHT)
+                            || WindowSetup.gravity == (Gravity.CENTER | Gravity.RIGHT)
+                            || WindowSetup.gravity == (Gravity.BOTTOM | Gravity.RIGHT);
+                    boolean invertY = WindowSetup.gravity == (Gravity.BOTTOM | Gravity.LEFT)
+                            || WindowSetup.gravity == Gravity.BOTTOM
+                            || WindowSetup.gravity == (Gravity.BOTTOM | Gravity.RIGHT);
+                    int xx = params.x + ((int) dx * (invertX ? -1 : 1));
+                    int yy = params.y + ((int) dy * (invertY ? -1 : 1));
                     params.x = xx;
                     params.y = yy;
                     windowManager.updateViewLayout(flutterView, params);
