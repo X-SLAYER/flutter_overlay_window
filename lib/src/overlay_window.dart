@@ -81,6 +81,11 @@ class FlutterOverlayWindow {
     return _res;
   }
 
+  static Future<bool> moveToHomeScreen() async{
+    final bool _res = await _channel.invokeMethod('moveToHomeScreen');
+    return _res;
+  }
+
   /// Broadcast data to and from overlay app
   static Future shareData(dynamic data) async {
     return await _overlayMessageChannel.send(data);
