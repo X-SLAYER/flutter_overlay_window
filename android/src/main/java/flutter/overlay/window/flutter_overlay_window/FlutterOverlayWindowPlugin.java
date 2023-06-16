@@ -111,10 +111,15 @@ public class FlutterOverlayWindowPlugin implements
             }
             return;
         } else if(call.method.equals("moveToHomeScreen")){
+            System.out.println('1');
             Intent startMain = new Intent(Intent.ACTION_MAIN);
+            System.out.println('2');
             startMain.addCategory(Intent.CATEGORY_HOME);
+            System.out.println('3');
             startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            System.out.println('4');
             mActivity.startActivityForResult(startMain, REQUEST_CODE_FOR_MOVE_TO_HOME_SCREEN);
+            System.out.println('5');
         }
         else {
             result.notImplemented();
@@ -171,11 +176,13 @@ public class FlutterOverlayWindowPlugin implements
 
     @Override
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+        System.out.println(requestCode);
         if (requestCode == REQUEST_CODE_FOR_OVERLAY_PERMISSION) {
             pendingResult.success(checkOverlayPermission());
             return true;
         }
         if(requestCode == REQUEST_CODE_FOR_MOVE_TO_HOME_SCREEN){
+            System.out.println("returning true");
             pendingResult.success(true);
             return true;
         }
