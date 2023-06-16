@@ -40,6 +40,7 @@ public class FlutterOverlayWindowPlugin implements
     private BasicMessageChannel<Object> messenger;
     private Result pendingResult;
     final int REQUEST_CODE_FOR_OVERLAY_PERMISSION = 1248;
+    final int REQUEST_CODE_FOR_MOVE_TO_HOME_SCREEN = 1245;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -109,7 +110,13 @@ public class FlutterOverlayWindowPlugin implements
                 result.success(true);
             }
             return;
-        } else {
+        } else if(call.method.equals("moveToHomeScreen")){
+            Intent startMain = new Intent(Intent.ACTION_MAIN);
+            startMain.addCategory(Intent.CATEGORY_HOME);
+            startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mActivity.startActivityForResult(startMain, REQUEST_CODE_FOR_MOVE_TO_HOME_SCREEN);
+        }
+        else {
             result.notImplemented();
         }
 
@@ -166,6 +173,10 @@ public class FlutterOverlayWindowPlugin implements
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CODE_FOR_OVERLAY_PERMISSION) {
             pendingResult.success(checkOverlayPermission());
+            return true;
+        }
+        if(requestCode == REQUEST_CODE_FOR_MOVE_TO_HOME_SCREEN){
+            pendingResult.success(true);
             return true;
         }
         return false;
