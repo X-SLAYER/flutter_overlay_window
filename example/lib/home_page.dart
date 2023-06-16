@@ -98,9 +98,18 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 log('Try to close');
                 FlutterOverlayWindow.closeOverlay()
-                    .then((value) => log('STOPPED: alue: $value'));
+                    .then((value) => log('STOPPED: value: $value'));
               },
               child: const Text("Close Overlay"),
+            ),
+            const SizedBox(height: 10),
+            TextButton(
+              onPressed: () {
+                log('Try to close');
+                FlutterOverlayWindow.moveToHomeScreen()
+                    .then((value) => log('MOVE_TO_HOME_SCREEN: value: $value'));
+              },
+              child: const Text("Move to home screen"),
             ),
             const SizedBox(height: 20.0),
             TextButton(

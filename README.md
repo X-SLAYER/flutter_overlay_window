@@ -73,6 +73,9 @@ void overlayMain() {
  /// closes overlay if open
  await FlutterOverlayWindow.closeOverlay();
 
+ /// moves to home screen
+ await FlutterOverlayWindow.moveToHomeScreen();
+
  /// broadcast data to and from overlay app
  await FlutterOverlayWindow.shareData("Hello from the other side");
 
