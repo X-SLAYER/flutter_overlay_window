@@ -81,7 +81,8 @@ class FlutterOverlayWindow {
     return _res;
   }
 
-  static Future<bool> moveToHomeScreen() async{
+  /// Takes to the android home screen
+  static Future<bool> moveToHomeScreen() async {
     final bool _res = await _channel.invokeMethod('moveToHomeScreen');
     return _res;
   }
