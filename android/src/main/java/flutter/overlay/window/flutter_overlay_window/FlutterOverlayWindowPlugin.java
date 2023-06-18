@@ -1,18 +1,16 @@
 package flutter.overlay.window.flutter_overlay_window;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.app.Activity;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
-import android.service.notification.StatusBarNotification;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationManagerCompat;
 
 import io.flutter.FlutterInjector;
 import io.flutter.embedding.engine.FlutterEngine;
@@ -40,7 +38,6 @@ public class FlutterOverlayWindowPlugin implements
     private BasicMessageChannel<Object> messenger;
     private Result pendingResult;
     final int REQUEST_CODE_FOR_OVERLAY_PERMISSION = 1248;
-    final int REQUEST_CODE_FOR_MOVE_TO_HOME_SCREEN = 1245;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -113,10 +110,10 @@ public class FlutterOverlayWindowPlugin implements
         } else if(call.method.equals("moveToHomeScreen")){
             Intent goToSystemHome = new Intent(Intent.ACTION_MAIN);
             goToSystemHome.addCategory(Intent.CATEGORY_HOME);
-//            goToSystemHome.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            goToSystemHome.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //            goToSystemHome.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             try {
-                mActivity.startActivity(goToSystemHome);
+                startActivity(context,goToSystemHome,null);
                 result.success(true);
             }catch (Error e){
                 result.error("347","Failed to go to android home screen",e);
