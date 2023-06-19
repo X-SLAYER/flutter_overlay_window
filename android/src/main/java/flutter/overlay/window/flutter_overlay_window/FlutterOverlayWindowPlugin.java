@@ -37,7 +37,7 @@ public class FlutterOverlayWindowPlugin implements
     private Activity mActivity;
     private BasicMessageChannel<Object> messenger;
     private Result pendingResult;
-    final int REQUEST_CODE_FOR_OVERLAY_PERMISSION = 1248;
+    static final int REQUEST_CODE_FOR_OVERLAY_PERMISSION = 1248;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -98,7 +98,7 @@ public class FlutterOverlayWindowPlugin implements
             result.success(null);
         } else if (call.method.equals("isOverlayActive")) {
             result.success(OverlayService.isRunning);
-            return;
+            
         } else if (call.method.equals("closeOverlay")) {
             if (OverlayService.isRunning) {
                 final Intent i = new Intent(context, OverlayService.class);
@@ -106,7 +106,6 @@ public class FlutterOverlayWindowPlugin implements
                 context.startService(i);
                 result.success(true);
             }
-            return;
         } else if(call.method.equals("moveToHomeScreen")){
             Intent goToSystemHome = new Intent(Intent.ACTION_MAIN);
             goToSystemHome.addCategory(Intent.CATEGORY_HOME);
