@@ -111,7 +111,6 @@ public class FlutterOverlayWindowPlugin implements
             Intent goToSystemHome = new Intent(Intent.ACTION_MAIN);
             goToSystemHome.addCategory(Intent.CATEGORY_HOME);
             goToSystemHome.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            goToSystemHome.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             try {
                 startActivity(context,goToSystemHome,null);
                 result.success(true);
