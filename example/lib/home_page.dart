@@ -104,10 +104,9 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 10),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 log('Try to close');
-                FlutterOverlayWindow.moveToHomeScreen()
-                    .then((value) => log('MOVE_TO_HOME_SCREEN: value: $value'));
+                await FlutterOverlayWindow.moveToHomeScreen();
               },
               child: const Text("Move to home screen"),
             ),

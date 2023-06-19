@@ -113,7 +113,7 @@ public class FlutterOverlayWindowPlugin implements
             goToSystemHome.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             try {
                 startActivity(context,goToSystemHome,null);
-                result.success(true);
+                result.success();
             }catch (Error e){
                 result.error("347","Failed to go to android home screen",e);
             }
