@@ -81,6 +81,7 @@ public class FlutterOverlayWindowPlugin implements
             String overlayContent = call.argument("overlayContent");
             String notificationVisibility = call.argument("notificationVisibility");
             boolean enableDrag = call.argument("enableDrag");
+            boolean ensureOpenOnlyOneOverlay = call.argument("ensureOpenOnlyOneOverlay");
             String positionGravity = call.argument("positionGravity");
 
             WindowSetup.width = width != null ? width : -1;
@@ -93,8 +94,16 @@ public class FlutterOverlayWindowPlugin implements
             WindowSetup.positionGravity = positionGravity;
             WindowSetup.setNotificationVisibility(notificationVisibility);
 
+            if (ensureOpenOnlyOneOverlay) {
+                if (OverlayService.isRunning) {
+                    final Intent i = new Intent(context, OverlayService.class);
+                    i.putExtra(OverlayService.INTENT_EXTRA_IS_CLOSE_WINDOW, true);
+                    context.startService(i);
+                }
+            }
+
             final Intent intent = new Intent(context, OverlayService.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME);
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             context.startService(intent);
             result.success(null);
