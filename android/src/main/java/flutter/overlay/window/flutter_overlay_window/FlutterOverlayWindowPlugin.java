@@ -95,11 +95,7 @@ public class FlutterOverlayWindowPlugin implements
             WindowSetup.setNotificationVisibility(notificationVisibility);
 
             if (ensureOpenOnlyOneOverlay) {
-                if (OverlayService.isRunning) {
-                    final Intent i = new Intent(context, OverlayService.class);
-                    i.putExtra(OverlayService.INTENT_EXTRA_IS_CLOSE_WINDOW, true);
-                    context.startService(i);
-                }
+                stopService(null);
             }
 
             final Intent intent = new Intent(context, OverlayService.class);
@@ -111,17 +107,27 @@ public class FlutterOverlayWindowPlugin implements
             result.success(OverlayService.isRunning);
             return;
         } else if (call.method.equals("closeOverlay")) {
-            if (OverlayService.isRunning) {
-                final Intent i = new Intent(context, OverlayService.class);
-                i.putExtra(OverlayService.INTENT_EXTRA_IS_CLOSE_WINDOW, true);
-                context.startService(i);
-                result.success(true);
-            }
-            return;
+            stopService(result);
         } else {
             result.notImplemented();
         }
 
+    }
+
+    public void stopService(Result result) {
+        if (OverlayService.isRunning) {
+            final Intent i = new Intent(context, OverlayService.class);
+            if (OverlayService.windowManager != null) {
+                OverlayService.windowManager.removeView(OverlayService.flutterView);
+                OverlayService.windowManager = null;
+                OverlayService.flutterView.detachFromFlutterEngine();
+            }
+            context.stopService(i);
+        }
+        if (result != null) {
+            result.success(true);
+        }
+        return;
     }
 
     @Override
