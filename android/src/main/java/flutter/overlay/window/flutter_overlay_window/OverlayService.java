@@ -54,8 +54,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
     public static final String INTENT_EXTRA_IS_CLOSE_WINDOW = "IsCloseWindow";
     public static boolean isRunning = false;
-    public static WindowManager windowManager = null;
-    public static FlutterView flutterView;
+    public WindowManager windowManager = null;
+    public FlutterView flutterView;
     private MethodChannel flutterChannel = null;
     private BasicMessageChannel<Object> overlayMessageChannel = null;
     private int clickableFlag = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
@@ -80,6 +80,12 @@ public class OverlayService extends Service implements View.OnTouchListener {
     @Override
     public void onDestroy() {
         Log.d("OverLay", "Destroying the overlay window service");
+        if (windowManager != null) {
+            windowManager.removeView(flutterView);
+            windowManager = null;
+            flutterView.detachFromFlutterEngine();
+            flutterView = null;
+        }
         isRunning = false;
         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(OverlayConstants.NOTIFICATION_ID);

@@ -117,11 +117,6 @@ public class FlutterOverlayWindowPlugin implements
     public void stopService(Result result) {
         if (OverlayService.isRunning) {
             final Intent i = new Intent(context, OverlayService.class);
-            if (OverlayService.windowManager != null) {
-                OverlayService.windowManager.removeView(OverlayService.flutterView);
-                OverlayService.windowManager = null;
-                OverlayService.flutterView.detachFromFlutterEngine();
-            }
             context.stopService(i);
         }
         if (result != null) {
