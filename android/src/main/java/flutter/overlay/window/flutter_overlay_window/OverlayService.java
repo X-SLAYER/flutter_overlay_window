@@ -136,7 +136,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 (orientation == Configuration.ORIENTATION_LANDSCAPE) ? WindowSetup.width
                         : WindowSetup.height != -1999 ? WindowSetup.height : screenHeight(),
                 0,
-                -statusBarHeightPx(),
+                -(statusBarHeightPx() + navigationBarHeight()),
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
                 WindowSetup.flag | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                         | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
@@ -161,9 +161,17 @@ public class OverlayService extends Service implements View.OnTouchListener {
         DisplayMetrics dm = new DisplayMetrics();
         display.getRealMetrics(dm);
         return inPortrait() ?
-                dm.heightPixels + statusBarHeightPx() + navigationBarHeightPx()
+                dm.heightPixels + statusBarHeightPx() + navigationBarHeightPx() + navigationBarHeight()
                 :
                 dm.heightPixels + statusBarHeightPx();
+    }
+
+    private int navigationBarHeight() {
+        int resourceId = mResources.getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            return mResources.getDimensionPixelSize(resourceId);
+        }
+        return 0;
     }
 
     private int statusBarHeightPx() {
