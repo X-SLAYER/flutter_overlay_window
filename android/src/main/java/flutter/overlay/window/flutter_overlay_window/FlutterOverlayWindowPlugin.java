@@ -83,6 +83,7 @@ public class FlutterOverlayWindowPlugin implements
             boolean enableDrag = call.argument("enableDrag");
             boolean ensureOpenOnlyOneOverlay = call.argument("ensureOpenOnlyOneOverlay");
             String positionGravity = call.argument("positionGravity");
+            String stopServiceActionTitle = call.argument("stopServiceActionTitle");
 
             WindowSetup.width = width != null ? width : -1;
             WindowSetup.height = height != null ? height : -1;
@@ -92,6 +93,7 @@ public class FlutterOverlayWindowPlugin implements
             WindowSetup.overlayTitle = overlayTitle;
             WindowSetup.overlayContent = overlayContent == null ? "" : overlayContent;
             WindowSetup.positionGravity = positionGravity;
+            WindowSetup.stopServiceActionTitle = stopServiceActionTitle != null ? stopServiceActionTitle : "Stop";
             WindowSetup.setNotificationVisibility(notificationVisibility);
 
             if (ensureOpenOnlyOneOverlay) {

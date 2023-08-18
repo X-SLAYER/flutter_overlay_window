@@ -94,6 +94,11 @@ public class OverlayService extends Service implements View.OnTouchListener {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null && OverlayConstants.ACTION_STOP_OVERLAY.equals(intent.getAction())) {
+            stopForeground(true);
+            stopSelf();
+            return START_NOT_STICKY;
+        }
         validateDartExecutor();
         mResources = getApplicationContext().getResources();
         isRunning = true;
@@ -239,6 +244,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
     public void onCreate() {
         createNotificationChannel();
         Intent notificationIntent = new Intent(this, FlutterOverlayWindowPlugin.class);
+        Intent serviceIntent = new Intent(this, flutter.overlay.window.flutter_overlay_window.OverlayService.class);
+        serviceIntent.setAction(OverlayConstants.ACTION_STOP_OVERLAY);
         int pendingFlags;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             pendingFlags = PendingIntent.FLAG_IMMUTABLE;
@@ -248,6 +255,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, pendingFlags);
         final int notifyIcon = getDrawableResourceId("drawable", "launcher");
+        PendingIntent closeOverlayPendingIntent = PendingIntent.getService(this, 0, serviceIntent, pendingFlags);
 
         Notification notification = new NotificationCompat.Builder(this, OverlayConstants.CHANNEL_ID)
                 .setContentTitle(WindowSetup.overlayTitle)
@@ -255,6 +263,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 .setSmallIcon(notifyIcon == 0 ? getDrawableResourceId("drawable", "launcher") : notifyIcon)
                 .setContentIntent(pendingIntent)
                 .setVisibility(WindowSetup.notificationVisibility)
+                .addAction(0, WindowSetup.stopServiceActionTitle, closeOverlayPendingIntent)
                 .build();
         startForeground(OverlayConstants.NOTIFICATION_ID, notification);
     }

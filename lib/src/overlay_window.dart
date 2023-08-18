@@ -38,6 +38,7 @@ class FlutterOverlayWindow {
     bool enableDrag = false,
     PositionGravity positionGravity = PositionGravity.none,
     bool ensureOpenOnlyOneOverlay = false,
+    String stopServiceActionTitle = 'Stop',
   }) async {
     await _channel.invokeMethod(
       'showOverlay',
@@ -52,6 +53,7 @@ class FlutterOverlayWindow {
         "notificationVisibility": visibility.name,
         "positionGravity": positionGravity.name,
         "ensureOpenOnlyOneOverlay": ensureOpenOnlyOneOverlay,
+        "stopServiceActionTitle": stopServiceActionTitle,
       },
     );
   }
