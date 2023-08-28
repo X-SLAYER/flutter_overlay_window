@@ -81,7 +81,9 @@ public class FlutterOverlayWindowPlugin implements
             String overlayContent = call.argument("overlayContent");
             String notificationVisibility = call.argument("notificationVisibility");
             boolean enableDrag = call.argument("enableDrag");
+            boolean ensureOpenOnlyOneOverlay = call.argument("ensureOpenOnlyOneOverlay");
             String positionGravity = call.argument("positionGravity");
+            String stopServiceActionTitle = call.argument("stopServiceActionTitle");
 
             WindowSetup.width = width != null ? width : -1;
             WindowSetup.height = height != null ? height : -1;
@@ -91,10 +93,15 @@ public class FlutterOverlayWindowPlugin implements
             WindowSetup.overlayTitle = overlayTitle;
             WindowSetup.overlayContent = overlayContent == null ? "" : overlayContent;
             WindowSetup.positionGravity = positionGravity;
+            WindowSetup.stopServiceActionTitle = stopServiceActionTitle != null ? stopServiceActionTitle : "Stop";
             WindowSetup.setNotificationVisibility(notificationVisibility);
 
+            if (ensureOpenOnlyOneOverlay) {
+                stopService(null);
+            }
+
             final Intent intent = new Intent(context, OverlayService.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME);
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             context.startService(intent);
             result.success(null);
@@ -102,17 +109,22 @@ public class FlutterOverlayWindowPlugin implements
             result.success(OverlayService.isRunning);
             return;
         } else if (call.method.equals("closeOverlay")) {
-            if (OverlayService.isRunning) {
-                final Intent i = new Intent(context, OverlayService.class);
-                i.putExtra(OverlayService.INTENT_EXTRA_IS_CLOSE_WINDOW, true);
-                context.startService(i);
-                result.success(true);
-            }
-            return;
+            stopService(result);
         } else {
             result.notImplemented();
         }
 
+    }
+
+    public void stopService(Result result) {
+        if (OverlayService.isRunning) {
+            final Intent i = new Intent(context, OverlayService.class);
+            context.stopService(i);
+        }
+        if (result != null) {
+            result.success(true);
+        }
+        return;
     }
 
     @Override

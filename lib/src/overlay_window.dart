@@ -37,6 +37,8 @@ class FlutterOverlayWindow {
     String? overlayContent,
     bool enableDrag = false,
     PositionGravity positionGravity = PositionGravity.none,
+    bool ensureOpenOnlyOneOverlay = false,
+    String stopServiceActionTitle = 'Stop',
   }) async {
     await _channel.invokeMethod(
       'showOverlay',
@@ -50,6 +52,8 @@ class FlutterOverlayWindow {
         "enableDrag": enableDrag,
         "notificationVisibility": visibility.name,
         "positionGravity": positionGravity.name,
+        "ensureOpenOnlyOneOverlay": ensureOpenOnlyOneOverlay,
+        "stopServiceActionTitle": stopServiceActionTitle,
       },
     );
   }
@@ -97,8 +101,7 @@ class FlutterOverlayWindow {
 
   /// Update the overlay flag while the overlay in action
   static Future<bool?> updateFlag(OverlayFlag flag) async {
-    final bool? _res = await _overlayChannel
-        .invokeMethod<bool?>('updateFlag', {'flag': flag.name});
+    final bool? _res = await _overlayChannel.invokeMethod<bool?>('updateFlag', {'flag': flag.name});
     return _res;
   }
 
