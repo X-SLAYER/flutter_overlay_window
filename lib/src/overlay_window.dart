@@ -162,7 +162,9 @@ class FlutterOverlayWindow {
     return _res ?? false;
   }
 
-  /// Dispose overlay stream
+  /// Dispose overlay stream.
+  ///
+  /// Once disposed, only a complete restart of the application will re-initialize the listener.
   static void disposeOverlayListener() {
     _controller.close();
   }
