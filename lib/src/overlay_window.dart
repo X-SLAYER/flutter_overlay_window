@@ -8,7 +8,7 @@ import 'package:flutter_overlay_window/src/overlay_config.dart';
 class FlutterOverlayWindow {
   FlutterOverlayWindow._();
 
-  static final StreamController _controller = StreamController();
+  static final StreamController _controller = StreamController.broadcast();
   static const MethodChannel _channel =
       MethodChannel("x-slayer/overlay_channel");
   static const MethodChannel _overlayChannel =
