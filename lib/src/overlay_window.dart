@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_overlay_window/src/models/overlay_position.dart';
 import 'package:flutter_overlay_window/src/overlay_config.dart';
@@ -95,9 +96,32 @@ class FlutterOverlayWindow {
     return _res;
   }
 
-  /// Broadcast data to and from overlay app
-  static Future shareData(dynamic data) async {
-    return await _overlayMessageChannel.send(data);
+  /// Broadcast [data] to and from overlay app.
+  ///
+  /// If `true` is returned, it indicates that the [data] was sent. However, this doesn't mean
+  /// that the [data] has already reached the listeners of the [overlayListener] stream.
+  ///
+  /// If `false` is returned, it indicates that the [data] was not sent.
+  ///
+  /// This method may return `false` under the following conditions:
+  /// - The overlay is closed.
+  /// - The application is detached from the activity, i.e. the application is closed.
+  ///
+  /// Returns `true` if the [data] was sent successfully, otherwise `false`.
+  ///
+  /// May return `null`, indicating a failure to send the [data] (This is unexpected behavior,
+  /// and if encountered, indicates a bug within plugin implementation that should be addressed).
+  static Future<bool?> shareData(dynamic data) async {
+    final isSent = await _overlayMessageChannel.send(data);
+    if (isSent == null) {
+      debugPrintStack(
+          stackTrace: StackTrace.current,
+          label: "[FlutterOverlayWindow] ERROR: "
+              "Failed to send the [data] using the [shareData] method. "
+              "Message channel handler is not registered.");
+      return null;
+    }
+    return isSent as bool;
   }
 
   /// Streams message shared between overlay and main app
@@ -165,7 +189,7 @@ class FlutterOverlayWindow {
   /// Dispose overlay stream.
   ///
   /// Once disposed, only a complete restart of the application will re-initialize the listener.
-  static void disposeOverlayListener() {
-    _controller.close();
+  static Future<dynamic> disposeOverlayListener() {
+    return _controller.close();
   }
 }
