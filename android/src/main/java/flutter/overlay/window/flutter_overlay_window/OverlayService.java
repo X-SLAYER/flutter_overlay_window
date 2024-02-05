@@ -56,7 +56,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private WindowManager windowManager = null;
     private FlutterView flutterView;
     private MethodChannel flutterChannel = new MethodChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.OVERLAY_TAG);
-    private BasicMessageChannel<Object> overlayMessageChannel = new BasicMessageChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
     private int clickableFlag = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 
@@ -88,7 +87,13 @@ public class OverlayService extends Service implements View.OnTouchListener {
         isRunning = false;
         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(OverlayConstants.NOTIFICATION_ID);
+
         instance = null;
+
+        if(CachedMessageChannels.overlayMessageChannel != null){
+            CachedMessageChannels.overlayMessageChannel.setMessageHandler(null);
+            CachedMessageChannels.overlayMessageChannel = null;
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -139,9 +144,18 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 resizeOverlay(width, height, enableDrag, result);
             }
         });
+
+        BasicMessageChannel<Object> overlayMessageChannel = new BasicMessageChannel<>(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor().getBinaryMessenger(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
         overlayMessageChannel.setMessageHandler((message, reply) -> {
-            WindowSetup.messenger.send(message);
+            if(CachedMessageChannels.mainAppMessageChannel == null) {
+                reply.reply(false);
+                return;
+            }
+            CachedMessageChannels.mainAppMessageChannel.send(message);
+            reply.reply(true);
         });
+        CachedMessageChannels.overlayMessageChannel = overlayMessageChannel;
+
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
