@@ -78,13 +78,15 @@ public class OverlayService extends Service implements View.OnTouchListener {
     @Override
     public void onDestroy() {
         Log.d("OverLay", "Destroying the overlay window service");
-        if (windowManager != null) {
+        isRunning = false;
+        if(windowManager != null && flutterView != null) {
             windowManager.removeView(flutterView);
             windowManager = null;
+        }
+        if(flutterView != null) {
             flutterView.detachFromFlutterEngine();
             flutterView = null;
         }
-        isRunning = false;
         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(OverlayConstants.NOTIFICATION_ID);
 
@@ -104,20 +106,16 @@ public class OverlayService extends Service implements View.OnTouchListener {
         int startY = intent.getIntExtra("startY", OverlayConstants.DEFAULT_XY);
         boolean isCloseWindow = intent.getBooleanExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, false);
         if (isCloseWindow) {
-            if (windowManager != null) {
-                windowManager.removeView(flutterView);
-                windowManager = null;
-                flutterView.detachFromFlutterEngine();
-                stopSelf();
-            }
-            isRunning = false;
+            stopSelf();
             return START_STICKY;
         }
-        if (windowManager != null) {
+        if(windowManager != null && flutterView != null) {
             windowManager.removeView(flutterView);
             windowManager = null;
+        }
+        if(flutterView != null) {
             flutterView.detachFromFlutterEngine();
-            stopSelf();
+            flutterView = null;
         }
         isRunning = true;
         Log.d("onStartCommand", "Service started");
@@ -147,7 +145,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
         BasicMessageChannel<Object> overlayMessageChannel = new BasicMessageChannel<>(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor().getBinaryMessenger(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
         overlayMessageChannel.setMessageHandler((message, reply) -> {
-            if(CachedMessageChannels.mainAppMessageChannel == null) {
+            if (CachedMessageChannels.mainAppMessageChannel == null) {
                 reply.reply(false);
                 return;
             }
