@@ -49,6 +49,7 @@ public class FlutterOverlayWindowPlugin implements
     FlutterPluginBinding flutterBinding;
     @Nullable
     ActivityPluginBinding activityPluginBinding;
+    boolean isMainAppEngine;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -56,6 +57,10 @@ public class FlutterOverlayWindowPlugin implements
         this.context = flutterPluginBinding.getApplicationContext();
         channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), OverlayConstants.CHANNEL_TAG);
         channel.setMethodCallHandler(this);
+
+        FlutterEngineGroup overlayEngineGroup = ensureEngineGroupCreated(context);
+        isMainAppEngine = flutterBinding.getEngineGroup() != overlayEngineGroup;
+        registerMessageChannel(isMainAppEngine);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -78,7 +83,7 @@ public class FlutterOverlayWindowPlugin implements
                 return;
             }
 
-            ensureEngineCreated();
+            ensureEngineCreated(context);
 
             Integer height = call.argument("height");
             Integer width = call.argument("width");
@@ -139,6 +144,8 @@ public class FlutterOverlayWindowPlugin implements
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         channel.setMethodCallHandler(null);
         flutterBinding = null;
+        unregisterMessageChannel(isMainAppEngine);
+        FlutterEngineGroupCache.getInstance().remove(OverlayConstants.CACHED_TAG);
     }
 
     @Override
@@ -146,11 +153,7 @@ public class FlutterOverlayWindowPlugin implements
         activityPluginBinding = binding;
         mActivity = binding.getActivity();
 
-        ensureEngineGroupCreated();
-
-        ensureEngineCreated();
-
-        setupMainAppMessageChannel();
+        ensureEngineCreated(context);
 
         binding.addActivityResultListener(this);
     }
@@ -170,33 +173,56 @@ public class FlutterOverlayWindowPlugin implements
         Objects.requireNonNull(activityPluginBinding).removeActivityResultListener(this);
         activityPluginBinding = null;
         mActivity = null;
-        FlutterEngineGroupCache.getInstance().remove(OverlayConstants.CACHED_TAG);
-        if (CachedMessageChannels.mainAppMessageChannel != null) {
+    }
+
+    private void registerMessageChannel(boolean isMainAppEngine) {
+        io.flutter.plugin.common.BinaryMessenger binaryMessenger = Objects.requireNonNull(flutterBinding).getBinaryMessenger();
+        if(isMainAppEngine) {
+            registerMainAppMessageChannel(binaryMessenger);
+        } else {
+            registerOverlayMessageChannel(binaryMessenger);
+        }
+    }
+
+    private void unregisterMessageChannel(boolean isMainAppEngine) {
+        if(isMainAppEngine) {
+            if (CachedMessageChannels.mainAppMessageChannel == null) return;
             CachedMessageChannels.mainAppMessageChannel.setMessageHandler(null);
             CachedMessageChannels.mainAppMessageChannel = null;
+        } else {
+            if(CachedMessageChannels.overlayMessageChannel == null) return;
+            CachedMessageChannels.overlayMessageChannel.setMessageHandler(null);
+            CachedMessageChannels.overlayMessageChannel = null;
         }
     }
 
-    private void setupMainAppMessageChannel() {
-        FlutterEngineGroup enn = FlutterEngineGroupCache.getInstance().get(OverlayConstants.CACHED_TAG);
-
-        boolean isMainAppEngineGroup =  Objects.requireNonNull(flutterBinding).getEngineGroup() != enn;
-
-        if(isMainAppEngineGroup) {
-            BasicMessageChannel<Object> mainAppMessageChannel = new BasicMessageChannel<>(flutterBinding.getBinaryMessenger(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
-            mainAppMessageChannel.setMessageHandler((message, reply) -> {
-                if (CachedMessageChannels.overlayMessageChannel == null) {
-                    reply.reply(false);
-                    return;
-                }
-                CachedMessageChannels.overlayMessageChannel.send(message);
-                reply.reply(true);
-            });
-            CachedMessageChannels.mainAppMessageChannel = mainAppMessageChannel;
-        }
+    private void registerOverlayMessageChannel(io.flutter.plugin.common.BinaryMessenger overlyEngineBinaryMessenger) {
+        BasicMessageChannel<Object> overlayMessageChannel = new BasicMessageChannel<>(overlyEngineBinaryMessenger, OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
+        overlayMessageChannel.setMessageHandler((message, reply) -> {
+            if (CachedMessageChannels.mainAppMessageChannel == null) {
+                reply.reply(false);
+                return;
+            }
+            CachedMessageChannels.mainAppMessageChannel.send(message);
+            reply.reply(true);
+        });
+        CachedMessageChannels.overlayMessageChannel = overlayMessageChannel;
     }
 
-    private FlutterEngineGroup ensureEngineGroupCreated() {
+    private void registerMainAppMessageChannel(io.flutter.plugin.common.BinaryMessenger mainAppEngineBinaryMessenger) {
+        BasicMessageChannel<Object> mainAppMessageChannel = new BasicMessageChannel<>(mainAppEngineBinaryMessenger, OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
+        mainAppMessageChannel.setMessageHandler((message, reply) -> {
+            if (CachedMessageChannels.overlayMessageChannel == null) {
+                reply.reply(false);
+                return;
+            }
+            CachedMessageChannels.overlayMessageChannel.send(message);
+            reply.reply(true);
+        });
+        CachedMessageChannels.mainAppMessageChannel = mainAppMessageChannel;
+    }
+
+    private FlutterEngineGroup ensureEngineGroupCreated(android.content.Context context) {
         FlutterEngineGroup enn = FlutterEngineGroupCache.getInstance().get(OverlayConstants.CACHED_TAG);
 
         if(enn == null) {
@@ -206,10 +232,10 @@ public class FlutterOverlayWindowPlugin implements
 
         return enn;
     }
-    private void ensureEngineCreated() {
+    private void ensureEngineCreated(android.content.Context context) {
         FlutterEngine engine = FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG);
         if(engine == null) {
-            FlutterEngineGroup enn = ensureEngineGroupCreated();
+            FlutterEngineGroup enn = ensureEngineGroupCreated(context);
             DartExecutor.DartEntrypoint dEntry = new DartExecutor.DartEntrypoint(
                     FlutterInjector.instance().flutterLoader().findAppBundlePath(),
                     "overlayMain");

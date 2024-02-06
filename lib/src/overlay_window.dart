@@ -103,24 +103,11 @@ class FlutterOverlayWindow {
   ///
   /// If `false` is returned, it indicates that the [data] was not sent.
   ///
-  /// This method may return `false` under the following conditions:
-  /// - The overlay is closed.
-  /// - The application is detached from the activity, i.e. the application is closed.
+  /// This method may return `false` when invoked from the overlay while the application is closed.
   ///
   /// Returns `true` if the [data] was sent successfully, otherwise `false`.
-  ///
-  /// May return `null`, indicating a failure to send the [data] (This is unexpected behavior,
-  /// and if encountered, indicates a bug within plugin implementation that should be addressed).
-  static Future<bool?> shareData(dynamic data) async {
+  static Future<bool> shareData(dynamic data) async {
     final isSent = await _overlayMessageChannel.send(data);
-    if (isSent == null) {
-      debugPrintStack(
-          stackTrace: StackTrace.current,
-          label: "[FlutterOverlayWindow] ERROR: "
-              "Failed to send the [data] using the [shareData] method. "
-              "Message channel handler is not registered.");
-      return null;
-    }
     return isSent as bool;
   }
 

@@ -37,8 +37,6 @@ import io.flutter.embedding.android.FlutterTextureView;
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterEngineCache;
-import io.flutter.plugin.common.BasicMessageChannel;
-import io.flutter.plugin.common.JSONMessageCodec;
 import io.flutter.plugin.common.MethodChannel;
 
 public class OverlayService extends Service implements View.OnTouchListener {
@@ -91,11 +89,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
         notificationManager.cancel(OverlayConstants.NOTIFICATION_ID);
 
         instance = null;
-
-        if(CachedMessageChannels.overlayMessageChannel != null){
-            CachedMessageChannels.overlayMessageChannel.setMessageHandler(null);
-            CachedMessageChannels.overlayMessageChannel = null;
-        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -142,17 +135,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 resizeOverlay(width, height, enableDrag, result);
             }
         });
-
-        BasicMessageChannel<Object> overlayMessageChannel = new BasicMessageChannel<>(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor().getBinaryMessenger(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
-        overlayMessageChannel.setMessageHandler((message, reply) -> {
-            if (CachedMessageChannels.mainAppMessageChannel == null) {
-                reply.reply(false);
-                return;
-            }
-            CachedMessageChannels.mainAppMessageChannel.send(message);
-            reply.reply(true);
-        });
-        CachedMessageChannels.overlayMessageChannel = overlayMessageChannel;
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
