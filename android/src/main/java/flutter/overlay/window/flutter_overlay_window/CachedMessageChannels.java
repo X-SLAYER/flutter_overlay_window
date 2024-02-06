@@ -1,11 +1,11 @@
 package flutter.overlay.window.flutter_overlay_window;
 
 import androidx.annotation.Nullable;
-import io.flutter.plugin.common.BasicMessageChannel;
+import io.flutter.plugin.common.MethodChannel;
 
 public abstract class CachedMessageChannels {
     @Nullable
-    public static BasicMessageChannel<Object> mainAppMessageChannel;
+    public static MethodChannel mainAppMessageChannel;
     @Nullable
-    public static BasicMessageChannel<Object> overlayMessageChannel;
+    public static MethodChannel overlayMessageChannel;
 }

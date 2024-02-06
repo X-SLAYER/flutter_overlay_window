@@ -28,8 +28,7 @@ import io.flutter.embedding.engine.dart.DartExecutor;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
-import io.flutter.plugin.common.BasicMessageChannel;
-import io.flutter.plugin.common.JSONMessageCodec;
+import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -187,37 +186,37 @@ public class FlutterOverlayWindowPlugin implements
     private void unregisterMessageChannel(boolean isMainAppEngine) {
         if(isMainAppEngine) {
             if (CachedMessageChannels.mainAppMessageChannel == null) return;
-            CachedMessageChannels.mainAppMessageChannel.setMessageHandler(null);
+            CachedMessageChannels.mainAppMessageChannel.setMethodCallHandler(null);
             CachedMessageChannels.mainAppMessageChannel = null;
         } else {
             if(CachedMessageChannels.overlayMessageChannel == null) return;
-            CachedMessageChannels.overlayMessageChannel.setMessageHandler(null);
+            CachedMessageChannels.overlayMessageChannel.setMethodCallHandler(null);
             CachedMessageChannels.overlayMessageChannel = null;
         }
     }
 
     private void registerOverlayMessageChannel(io.flutter.plugin.common.BinaryMessenger overlyEngineBinaryMessenger) {
-        BasicMessageChannel<Object> overlayMessageChannel = new BasicMessageChannel<>(overlyEngineBinaryMessenger, OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
-        overlayMessageChannel.setMessageHandler((message, reply) -> {
+        MethodChannel overlayMessageChannel = new MethodChannel(overlyEngineBinaryMessenger, OverlayConstants.MESSENGER_TAG, JSONMethodCodec.INSTANCE);
+        overlayMessageChannel.setMethodCallHandler((call, result) -> {
             if (CachedMessageChannels.mainAppMessageChannel == null) {
-                reply.reply(false);
+                result.success(false);
                 return;
             }
-            CachedMessageChannels.mainAppMessageChannel.send(message);
-            reply.reply(true);
+            CachedMessageChannels.mainAppMessageChannel.invokeMethod("message", call.arguments);
+            result.success(true);
         });
         CachedMessageChannels.overlayMessageChannel = overlayMessageChannel;
     }
 
     private void registerMainAppMessageChannel(io.flutter.plugin.common.BinaryMessenger mainAppEngineBinaryMessenger) {
-        BasicMessageChannel<Object> mainAppMessageChannel = new BasicMessageChannel<>(mainAppEngineBinaryMessenger, OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
-        mainAppMessageChannel.setMessageHandler((message, reply) -> {
+        MethodChannel mainAppMessageChannel = new MethodChannel(mainAppEngineBinaryMessenger, OverlayConstants.MESSENGER_TAG, JSONMethodCodec.INSTANCE);
+        mainAppMessageChannel.setMethodCallHandler((call, result) -> {
             if (CachedMessageChannels.overlayMessageChannel == null) {
-                reply.reply(false);
+                result.success(false);
                 return;
             }
-            CachedMessageChannels.overlayMessageChannel.send(message);
-            reply.reply(true);
+            CachedMessageChannels.overlayMessageChannel.invokeMethod("message", call.arguments);
+            result.success(true);
         });
         CachedMessageChannels.mainAppMessageChannel = mainAppMessageChannel;
     }
