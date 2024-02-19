@@ -120,6 +120,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 int width = call.argument("width");
                 int height = call.argument("height");
                 resizeOverlay(width, height, result);
+            } else if (call.method.equals("moveOverlay")) {
+                int x = call.argument("x");
+                int y = call.argument("y");
+                moveOverlay(x, y, result);
             }
         });
         overlayMessageChannel.setMessageHandler((message, reply) -> {
@@ -229,6 +233,17 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
     }
 
+    private void moveOverlay(int x, int y, MethodChannel.Result result) {
+        if (windowManager != null) {
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
+            params.x = (x == -1999 || x == -1) ? -1 : dpToPx(x);
+            params.y = (y != 1999 || y != -1) ? dpToPx(y) : y;
+            windowManager.updateViewLayout(flutterView, params);
+            result.success(true);
+        } else {
+            result.success(false);
+        }
+    }
 
     @Override
     public void onCreate() {

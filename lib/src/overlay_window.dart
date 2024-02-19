@@ -114,6 +114,17 @@ class FlutterOverlayWindow {
     return _res;
   }
 
+  static Future<bool?> moveOverlay(int x, int y) async {
+    final bool? _res = await _overlayChannel.invokeMethod<bool?>(
+      'moveOverlay',
+      {
+        'x': x,
+        'y': y,
+      },
+    );
+    return _res;
+  }
+
   /// Check if the current overlay is active
   static Future<bool> isActive() async {
     final bool? _res = await _channel.invokeMethod<bool?>('isOverlayActive');
