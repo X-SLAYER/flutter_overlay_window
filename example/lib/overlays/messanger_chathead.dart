@@ -1,6 +1,4 @@
-import 'dart:developer';
-import 'dart:isolate';
-import 'dart:ui';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
@@ -13,29 +11,26 @@ class MessangerChatHead extends StatefulWidget {
 }
 
 class _MessangerChatHeadState extends State<MessangerChatHead> {
+  StreamSubscription<dynamic>? _overlaySubscription;
   Color color = const Color(0xFFFFFFFF);
   BoxShape _currentShape = BoxShape.circle;
-  static const String _kPortNameOverlay = 'OVERLAY';
-  static const String _kPortNameHome = 'UI';
-  final _receivePort = ReceivePort();
-  SendPort? homePort;
   String? messageFromOverlay;
 
   @override
   void initState() {
     super.initState();
-    if (homePort != null) return;
-    final res = IsolateNameServer.registerPortWithName(
-      _receivePort.sendPort,
-      _kPortNameOverlay,
-    );
-    log("$res : HOME");
-    _receivePort.listen((message) {
-      log("message from UI: $message");
+    _overlaySubscription = FlutterOverlayWindow.overlayListener.listen((message) {
+      if(!mounted) return;
       setState(() {
         messageFromOverlay = 'message from UI: $message';
       });
     });
+  }
+
+  @override
+  void dispose() {
+    _overlaySubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -79,10 +74,7 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
                             backgroundColor: Colors.black,
                           ),
                           onPressed: () {
-                            homePort ??= IsolateNameServer.lookupPortByName(
-                              _kPortNameHome,
-                            );
-                            homePort?.send('Date: ${DateTime.now()}');
+                            FlutterOverlayWindow.shareData('Date: ${DateTime.now()}');
                           },
                           child: const Text("Send message to UI"),
                         ),

@@ -6,7 +6,7 @@ description: Demonstrates how to use the flutter_overlay_window plugin.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: ">=2.16.2 <3.0.0"
+  sdk: ">=2.16.2 <4.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -18,22 +18,26 @@ dependencies:
   flutter:
     sdk: flutter
   multiavatar: ^0.1.5
-  provider: ^6.0.2
-  rename: ^2.0.0-dev.2
-  shimmer: ^2.0.0
-  simple_animations: ^4.0.2
+  provider: ^6.1.1
+  rename: ^3.0.1
+  shimmer: ^3.0.0
+  simple_animations: ^5.0.2
   supercharged: ^2.1.1
-  flutter_app_version_checker: ^0.0.3
-  flutter_accessibility_service: ^0.2.2
+  flutter_app_version_checker: ^0.3.2
+  flutter_accessibility_service: ^0.2.4
   flutter_overlay_window:
     path: ../
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.6
+
+#Fix for build error caused by package_info_plus_windows-2.1.0
+dependency_overrides:
+  package_info_plus: ^5.0.0
 
 dev_dependencies:
-  flutter_lints: ^1.0.0
+  flutter_lints: ^3.0.1
   flutter_test:
     sdk: flutter
 

@@ -27,7 +27,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
-import com.example.flutter_overlay_window.R;
+import flutter.overlay.window.flutter_overlay_window.R;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -36,8 +36,6 @@ import io.flutter.embedding.android.FlutterTextureView;
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterEngineCache;
-import io.flutter.plugin.common.BasicMessageChannel;
-import io.flutter.plugin.common.JSONMessageCodec;
 import io.flutter.plugin.common.MethodChannel;
 
 public class OverlayService extends Service implements View.OnTouchListener {
@@ -53,7 +51,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private WindowManager windowManager = null;
     private FlutterView flutterView;
     private MethodChannel flutterChannel = new MethodChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.OVERLAY_TAG);
-    private BasicMessageChannel<Object> overlayMessageChannel = new BasicMessageChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
     private int clickableFlag = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 
@@ -77,6 +74,15 @@ public class OverlayService extends Service implements View.OnTouchListener {
     public void onDestroy() {
         Log.d("OverLay", "Destroying the overlay window service");
         isRunning = false;
+        if(windowManager != null && flutterView != null) {
+            windowManager.removeView(flutterView);
+            windowManager = null;
+        }
+        if(flutterView != null) {
+            flutterView.detachFromFlutterEngine();
+            flutterView = null;
+        }
+        OverlayStatusEmitter.emitIsShowing(false);
         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(OverlayConstants.NOTIFICATION_ID);
     }
@@ -87,20 +93,16 @@ public class OverlayService extends Service implements View.OnTouchListener {
         mResources = getApplicationContext().getResources();
         boolean isCloseWindow = intent.getBooleanExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, false);
         if (isCloseWindow) {
-            if (windowManager != null) {
-                windowManager.removeView(flutterView);
-                windowManager = null;
-                flutterView.detachFromFlutterEngine();
-                stopSelf();
-            }
-            isRunning = false;
+            stopSelf();
             return START_STICKY;
         }
-        if (windowManager != null) {
+        if(windowManager != null && flutterView != null) {
             windowManager.removeView(flutterView);
             windowManager = null;
+        }
+        if(flutterView != null) {
             flutterView.detachFromFlutterEngine();
-            stopSelf();
+            flutterView = null;
         }
         isRunning = true;
         Log.d("onStartCommand", "Service started");
@@ -122,9 +124,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 resizeOverlay(width, height, result);
             }
         });
-        overlayMessageChannel.setMessageHandler((message, reply) -> {
-            WindowSetup.messenger.send(message);
-        });
+
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -154,6 +154,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         params.gravity = WindowSetup.gravity;
         flutterView.setOnTouchListener(this);
         windowManager.addView(flutterView, params);
+        OverlayStatusEmitter.emitIsShowing(true);
         return START_STICKY;
     }
 
@@ -352,6 +353,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             mAnimationHandler.post(() -> {
                 params.x = (2 * (params.x - mDestX)) / 3 + mDestX;
                 params.y = (2 * (params.y - mDestY)) / 3 + mDestY;
+                if(windowManager == null) return;
                 windowManager.updateViewLayout(flutterView, params);
                 if (Math.abs(params.x - mDestX) < 2 && Math.abs(params.y - mDestY) < 2) {
                     TrayAnimationTimerTask.this.cancel();

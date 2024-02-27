@@ -1,12 +1,8 @@
 package flutter.overlay.window.flutter_overlay_window;
 
-
 import android.view.Gravity;
 import android.view.WindowManager;
-
 import androidx.core.app.NotificationCompat;
-
-import io.flutter.plugin.common.BasicMessageChannel;
 
 public abstract class WindowSetup {
 
@@ -14,7 +10,6 @@ public abstract class WindowSetup {
     static int width = WindowManager.LayoutParams.MATCH_PARENT;
     static int flag = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
     static int gravity = Gravity.CENTER;
-    static BasicMessageChannel<Object> messenger = null;
     static String overlayTitle = "Overlay is activated";
     static String overlayContent = "Tap to edit settings or disable";
     static String positionGravity = "none";
