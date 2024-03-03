@@ -23,7 +23,6 @@ dependencies:
   shimmer: ^2.0.0
   simple_animations: ^4.0.2
   supercharged: ^2.1.1
-  flutter_app_version_checker: ^0.0.3
   flutter_accessibility_service: ^0.2.2
   flutter_overlay_window:
     path: ../
