@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_overlay_window/src/overlay_config.dart';
@@ -116,11 +115,12 @@ class FlutterOverlayWindow {
   }
 
   /// Update the overlay size in the screen
-  static Future<Point?> getOverlayPosition() async {
-    final Point? _res = await _overlayChannel.invokeMethod<Point?>(
+  static Future<Offset> getOverlayPosition() async {
+    final Map<Object?, Object?>? _res =
+        await _overlayChannel.invokeMethod<Map<Object?, Object?>?>(
       'getOverlayPosition',
     );
-    return _res;
+    return Offset(_res!["x"]! as double, _res["y"]! as double);
   }
 
   static Future<bool?> moveOverlay(int x, int y) async {

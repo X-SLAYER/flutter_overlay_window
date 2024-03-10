@@ -31,6 +31,8 @@ import com.example.flutter_overlay_window.R;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Map;
+import java.util.HashMap;
 
 import io.flutter.embedding.android.FlutterTextureView;
 import io.flutter.embedding.android.FlutterView;
@@ -124,6 +126,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 int x = call.argument("x");
                 int y = call.argument("y");
                 moveOverlay(x, y, result);
+            } else if (call.method.equals("getOverlayPosition")) {
+                getOverlayPosition(result);
             }
         });
         overlayMessageChannel.setMessageHandler((message, reply) -> {
@@ -296,6 +300,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private int dpToPx(int dp) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 Float.parseFloat(dp + ""), mResources.getDisplayMetrics());
+    }
+
+    private double pxToDp(int px) {
+        return (double) px / mResources.getDisplayMetrics().density;
     }
 
     private boolean inPortrait() {
