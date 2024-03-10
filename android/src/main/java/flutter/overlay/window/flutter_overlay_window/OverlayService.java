@@ -221,6 +221,14 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
     }
 
+    private void getOverlayPosition(MethodChannel.Result result) {
+        WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
+        Map<String, Double> position = new HashMap<>();
+        position.put("x", pxToDp(params.x));
+        position.put("y", pxToDp(params.y));
+        result.success(position);
+    }
+
     private void resizeOverlay(int width, int height, MethodChannel.Result result) {
         if (windowManager != null) {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
