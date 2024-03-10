@@ -114,6 +114,26 @@ class FlutterOverlayWindow {
     return _res;
   }
 
+  /// Update the overlay size in the screen
+  static Future<Offset> getOverlayPosition() async {
+    final Map<Object?, Object?>? _res =
+        await _overlayChannel.invokeMethod<Map<Object?, Object?>?>(
+      'getOverlayPosition',
+    );
+    return Offset(_res!["x"]! as double, _res["y"]! as double);
+  }
+
+  static Future<bool?> moveOverlay(int x, int y) async {
+    final bool? _res = await _overlayChannel.invokeMethod<bool?>(
+      'moveOverlay',
+      {
+        'x': x,
+        'y': y,
+      },
+    );
+    return _res;
+  }
+
   /// Check if the current overlay is active
   static Future<bool> isActive() async {
     final bool? _res = await _channel.invokeMethod<bool?>('isOverlayActive');
