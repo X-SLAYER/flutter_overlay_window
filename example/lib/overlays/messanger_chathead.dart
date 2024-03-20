@@ -46,7 +46,7 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
       child: GestureDetector(
         onTap: () async {
           if (_currentShape == BoxShape.rectangle) {
-            await FlutterOverlayWindow.resizeOverlay(50, 100);
+            await FlutterOverlayWindow.resizeOverlay(50, 100, true);
             setState(() {
               _currentShape = BoxShape.circle;
             });
@@ -54,6 +54,7 @@ class _MessangerChatHeadState extends State<MessangerChatHead> {
             await FlutterOverlayWindow.resizeOverlay(
               WindowSize.matchParent,
               WindowSize.matchParent,
+              false,
             );
             setState(() {
               _currentShape = BoxShape.rectangle;
