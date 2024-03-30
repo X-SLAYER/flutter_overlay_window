@@ -24,10 +24,12 @@
 Flutter plugin for displaying your Flutter app over other apps on the screen
 </p>
 
+---
+
 ## Preview
 
-|TrueCaller overlay example|click-through overlay example|  Messanger chat-head example |
-| :-:| :-: | :-: |
+|                                                          TrueCaller overlay example                                                          |                                                        click-through overlay example                                                        |                                                         Messanger chat-head example                                                         |
+| :------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------: |
 | <img src='https://user-images.githubusercontent.com/22800380/165636217-8957396b-dc54-4e6d-aa50-e8bfdb9383cf.gif' height='600' width='300' /> | <img src='https://user-images.githubusercontent.com/22800380/165636120-dcd9ee13-5fca-4f8a-a562-b2f53c0b5e24.gif' height='600' width='300'/> | <img src='https://user-images.githubusercontent.com/22800380/178730917-40f267bb-63a2-4ad3-ba69-f7c1285a1882.gif' height='600' width='300'/> |
 
 ## Installation
@@ -79,17 +81,29 @@ void overlayMain() {
  /// it will open the overlay settings page and return `true` once the permission granted.
  final bool status = await FlutterOverlayWindow.requestPermission();
 
- /// Open overLay content
- ///
- /// - Optional arguments:
- /// `height` the overlay height and default is [overlaySizeFill]
- /// `width` the overlay width and default is [overlaySizeFill]
- /// `OverlayAlignment` the alignment postion on screen and default is [OverlayAlignment.center]
- /// `OverlayFlag` the overlay flag and default is [OverlayFlag.defaultFlag]
- /// `overlayTitle` the notification message and default is "overlay activated"
- /// `overlayContent` the notification message
- /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
- /// `positionGravity` the overlay postion after drag and default is [PositionGravity.none]
+  /// Open overLay content
+  ///
+  /// - Optional arguments:
+  ///
+  /// `height` the overlay height and default is [WindowSize.fullCover]
+  ///
+  /// `width` the overlay width and default is [WindowSize.matchParent]
+  ///
+  /// `alignment` the alignment postion on screen and default is [OverlayAlignment.center]
+  ///
+  /// `visibilitySecret` the detail displayed in notifications on the lock screen and default is [NotificationVisibility.visibilitySecret]
+  ///
+  /// `OverlayFlag` the overlay flag and default is [OverlayFlag.defaultFlag]
+  ///
+  /// `overlayTitle` the notification message and default is "overlay activated"
+  ///
+  /// `overlayContent` the notification message
+  ///
+  /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
+  ///
+  /// `positionGravity` the overlay postion after drag and default is [PositionGravity.none]
+  ///
+  /// `startPosition` the overlay start position and default is null
  await FlutterOverlayWindow.showOverlay();
 
  /// closes overlay if open
@@ -112,6 +126,18 @@ void overlayMain() {
 
  /// Update the overlay size in the screen
  await FlutterOverlayWindow.resizeOverlay(80, 120);
+
+ /// Update the overlay position in the screen
+ ///
+ /// `position` the new position of the overlay
+ ///
+ /// `return` true if the position updated successfully
+ await FlutterOverlayWindow.moveOverlay(OverlayPosition(0, 156))
+
+ /// Get the current overlay position
+ ///
+ /// `return` the current overlay position
+ await FlutterOverlayWindow.getOverlayPosition()
 
 ```
 

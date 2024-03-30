@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_overlay_window/src/models/overlay_position.dart';
 import 'package:flutter_overlay_window/src/overlay_config.dart';
 
 class FlutterOverlayWindow {
@@ -18,15 +19,26 @@ class FlutterOverlayWindow {
   /// Open overLay content
   ///
   /// - Optional arguments:
+  ///
   /// `height` the overlay height and default is [WindowSize.fullCover]
+  ///
   /// `width` the overlay width and default is [WindowSize.matchParent]
+  ///
   /// `alignment` the alignment postion on screen and default is [OverlayAlignment.center]
+  ///
   /// `visibilitySecret` the detail displayed in notifications on the lock screen and default is [NotificationVisibility.visibilitySecret]
+  ///
   /// `OverlayFlag` the overlay flag and default is [OverlayFlag.defaultFlag]
+  ///
   /// `overlayTitle` the notification message and default is "overlay activated"
+  ///
   /// `overlayContent` the notification message
+  ///
   /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
+  ///
   /// `positionGravity` the overlay postion after drag and default is [PositionGravity.none]
+  ///
+  /// `startPosition` the overlay start position and default is null
   static Future<void> showOverlay({
     int height = WindowSize.fullCover,
     int width = WindowSize.matchParent,
@@ -37,6 +49,7 @@ class FlutterOverlayWindow {
     String? overlayContent,
     bool enableDrag = false,
     PositionGravity positionGravity = PositionGravity.none,
+    OverlayPosition? startPosition,
   }) async {
     await _channel.invokeMethod(
       'showOverlay',
@@ -50,6 +63,7 @@ class FlutterOverlayWindow {
         "enableDrag": enableDrag,
         "notificationVisibility": visibility.name,
         "positionGravity": positionGravity.name,
+        "startPosition": startPosition?.toMap(),
       },
     );
   }
@@ -117,6 +131,29 @@ class FlutterOverlayWindow {
       },
     );
     return _res;
+  }
+
+  /// Update the overlay position in the screen
+  ///
+  /// `position` the new position of the overlay
+  ///
+  /// `return` true if the position updated successfully
+  static Future<bool?> moveOverlay(OverlayPosition position) async {
+    final bool? _res = await _channel.invokeMethod<bool?>(
+      'moveOverlay',
+      position.toMap(),
+    );
+    return _res;
+  }
+
+  /// Get the current overlay position
+  ///
+  /// `return` the current overlay position
+  static Future<OverlayPosition> getOverlayPosition() async {
+    final Map<Object?, Object?>? _res = await _channel.invokeMethod(
+      'getOverlayPosition',
+    );
+    return OverlayPosition.fromMap(_res);
   }
 
   /// Check if the current overlay is active

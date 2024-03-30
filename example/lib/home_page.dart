@@ -74,6 +74,7 @@ class _HomePageState extends State<HomePage> {
                   positionGravity: PositionGravity.auto,
                   height: (MediaQuery.of(context).size.height * 0.6).toInt(),
                   width: WindowSize.matchParent,
+                  startPosition: const OverlayPosition(0, -259),
                 );
               },
               child: const Text("Show Overlay"),
@@ -114,6 +115,27 @@ class _HomePageState extends State<HomePage> {
                 homePort?.send('Send to overlay: ${DateTime.now()}');
               },
               child: const Text("Send message to overlay"),
+            ),
+            const SizedBox(height: 20.0),
+            TextButton(
+              onPressed: () {
+                FlutterOverlayWindow.getOverlayPosition().then((value) {
+                  log('Overlay Position: $value');
+                  setState(() {
+                    latestMessageFromOverlay = 'Overlay Position: $value';
+                  });
+                });
+              },
+              child: const Text("Get overlay position"),
+            ),
+            const SizedBox(height: 20.0),
+            TextButton(
+              onPressed: () {
+                FlutterOverlayWindow.moveOverlay(
+                  const OverlayPosition(0, 0),
+                );
+              },
+              child: const Text("Move overlay position to (0, 0)"),
             ),
             const SizedBox(height: 20),
             Text(latestMessageFromOverlay ?? ''),
