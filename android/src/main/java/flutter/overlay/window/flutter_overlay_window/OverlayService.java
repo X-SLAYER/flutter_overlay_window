@@ -28,8 +28,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
-import com.example.flutter_overlay_window.R;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
