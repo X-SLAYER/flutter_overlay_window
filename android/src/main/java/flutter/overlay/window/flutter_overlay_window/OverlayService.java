@@ -28,8 +28,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
-import com.example.flutter_overlay_window.R;
-
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -50,6 +50,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private Resources mResources;
 
     public static final String INTENT_EXTRA_IS_CLOSE_WINDOW = "IsCloseWindow";
+
+    private static OverlayService instance;
     public static boolean isRunning = false;
     private WindowManager windowManager = null;
     private FlutterView flutterView;
@@ -86,12 +88,15 @@ public class OverlayService extends Service implements View.OnTouchListener {
         isRunning = false;
         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(OverlayConstants.NOTIFICATION_ID);
+        instance = null;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         mResources = getApplicationContext().getResources();
+        int startX = intent.getIntExtra("startX", OverlayConstants.DEFAULT_XY);
+        int startY = intent.getIntExtra("startY", OverlayConstants.DEFAULT_XY);
         boolean isCloseWindow = intent.getBooleanExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, false);
         if (isCloseWindow) {
             if (windowManager != null) {
@@ -123,6 +128,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
             if (call.method.equals("updateFlag")) {
                 String flag = call.argument("flag").toString();
                 updateOverlayFlag(result, flag);
+            } else if (call.method.equals("updateOverlayPosition")) {
+                int x = call.<Integer>argument("x");
+                int y = call.<Integer>argument("y");
+                moveOverlay(x, y, result);
             } else if (call.method.equals("resizeOverlay")) {
                 int width = call.argument("width");
                 int height = call.argument("height");
@@ -144,6 +153,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
             int h = displaymetrics.heightPixels;
             szWindow.set(w, h);
         }
+        int dx = startX == OverlayConstants.DEFAULT_XY ? 0 : startX;
+        int dy = startY == OverlayConstants.DEFAULT_XY ? -statusBarHeightPx() : startY;
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowSetup.width == -1999 ? -1 : WindowSetup.width,
                 WindowSetup.height != -1999 ? WindowSetup.height : screenHeight(),
@@ -162,6 +173,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         params.gravity = WindowSetup.gravity;
         flutterView.setOnTouchListener(this);
         windowManager.addView(flutterView, params);
+        moveOverlay(dx, dy, null);
         return START_STICKY;
     }
 
@@ -238,6 +250,48 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
     }
 
+    private void moveOverlay(int x, int y, MethodChannel.Result result) {
+        if (windowManager != null) {
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
+            params.x = (x == -1999 || x == -1) ? -1 : dpToPx(x);
+            params.y = dpToPx(y);
+            windowManager.updateViewLayout(flutterView, params);
+            if (result != null)
+                result.success(true);
+        } else {
+            if (result != null)
+                result.success(false);
+        }
+    }
+
+
+    public static Map<String, Double> getCurrentPosition() {
+        if (instance != null && instance.flutterView != null) {
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) instance.flutterView.getLayoutParams();
+            Map<String, Double> position = new HashMap<>();
+            position.put("x", instance.pxToDp(params.x));
+            position.put("y", instance.pxToDp(params.y));
+            return position;
+        }
+        return null;
+    }
+
+    public static boolean moveOverlay(int x, int y) {
+        if (instance != null && instance.flutterView != null) {
+            if (instance.windowManager != null) {
+                WindowManager.LayoutParams params = (WindowManager.LayoutParams) instance.flutterView.getLayoutParams();
+                params.x = (x == -1999 || x == -1) ? -1 : instance.dpToPx(x);
+                params.y = instance.dpToPx(y);
+                instance.windowManager.updateViewLayout(instance.flutterView, params);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
 
     @Override
     public void onCreate() {
@@ -260,6 +314,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 .setVisibility(WindowSetup.notificationVisibility)
                 .build();
         startForeground(OverlayConstants.NOTIFICATION_ID, notification);
+        instance = this;
     }
 
     private void createNotificationChannel() {
@@ -282,6 +337,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private int dpToPx(int dp) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 Float.parseFloat(dp + ""), mResources.getDisplayMetrics());
+    }
+
+    private double pxToDp(int px) {
+        return (double) px / mResources.getDisplayMetrics().density;
     }
 
     private boolean inPortrait() {

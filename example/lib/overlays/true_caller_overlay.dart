@@ -29,12 +29,6 @@ class _TrueCallerOverlayState extends State<TrueCallerOverlay> {
   @override
   void initState() {
     super.initState();
-    FlutterOverlayWindow.overlayListener.listen((event) {
-      log("$event");
-      setState(() {
-        isGold = !isGold;
-      });
-    });
   }
 
   @override
@@ -55,8 +49,12 @@ class _TrueCallerOverlayState extends State<TrueCallerOverlay> {
           ),
           child: GestureDetector(
             onTap: () {
-              FlutterOverlayWindow.shareData(
-                  "Heyy this is a data from the overlay");
+              setState(() {
+                isGold = !isGold;
+              });
+              FlutterOverlayWindow.getOverlayPosition().then((value) {
+                log("Overlay Position: $value");
+              });
             },
             child: Stack(
               children: [
