@@ -74,7 +74,6 @@ class _HomePageState extends State<HomePage> {
                   positionGravity: PositionGravity.auto,
                   height: (MediaQuery.of(context).size.height * 0.6).toInt(),
                   width: WindowSize.matchParent,
-                  startPosition: const OverlayPosition(0, -259),
                 );
               },
               child: const Text("Show Overlay"),

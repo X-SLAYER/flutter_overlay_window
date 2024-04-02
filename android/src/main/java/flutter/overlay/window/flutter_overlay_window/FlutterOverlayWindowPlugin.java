@@ -38,12 +38,15 @@ public class FlutterOverlayWindowPlugin implements
         FlutterPlugin, ActivityAware, BasicMessageChannel.MessageHandler, MethodCallHandler,
         PluginRegistry.ActivityResultListener {
 
+
     private MethodChannel channel;
     private Context context;
     private Activity mActivity;
     private BasicMessageChannel<Object> messenger;
     private Result pendingResult;
     final int REQUEST_CODE_FOR_OVERLAY_PERMISSION = 1248;
+
+    WindowSetup windowSetup = WindowSetup.getInstance();
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -54,9 +57,7 @@ public class FlutterOverlayWindowPlugin implements
         messenger = new BasicMessageChannel(flutterPluginBinding.getBinaryMessenger(), OverlayConstants.MESSENGER_TAG,
                 JSONMessageCodec.INSTANCE);
         messenger.setMessageHandler(this);
-
-        WindowSetup.messenger = messenger;
-        WindowSetup.messenger.setMessageHandler(this);
+        windowSetup.setMessenger(messenger, this);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -92,15 +93,15 @@ public class FlutterOverlayWindowPlugin implements
             int startY = startPosition != null ? startPosition.getOrDefault("y", OverlayConstants.DEFAULT_XY) : OverlayConstants.DEFAULT_XY;
 
 
-            WindowSetup.width = width != null ? width : -1;
-            WindowSetup.height = height != null ? height : -1;
-            WindowSetup.enableDrag = enableDrag;
-            WindowSetup.setGravityFromAlignment(alignment != null ? alignment : "center");
-            WindowSetup.setFlag(flag != null ? flag : "flagNotFocusable");
-            WindowSetup.overlayTitle = overlayTitle;
-            WindowSetup.overlayContent = overlayContent == null ? "" : overlayContent;
-            WindowSetup.positionGravity = positionGravity;
-            WindowSetup.setNotificationVisibility(notificationVisibility);
+            windowSetup.setWidth(width != null ? width : -1);
+            windowSetup.setHeight(height != null ? height : -1);
+            windowSetup.setEnableDrag(enableDrag);
+            windowSetup.setGravityFromAlignment(alignment != null ? alignment : "center");
+            windowSetup.setFlag(flag != null ? flag : "flagNotFocusable");
+            windowSetup.setOverlayTitle(overlayTitle);
+            windowSetup.setOverlayContent(overlayContent == null ? "" : overlayContent);
+            windowSetup.setPositionGravity(positionGravity);
+            windowSetup.setNotificationVisibility(notificationVisibility);
 
             final Intent intent = new Intent(context, OverlayService.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -137,7 +138,7 @@ public class FlutterOverlayWindowPlugin implements
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         channel.setMethodCallHandler(null);
-        WindowSetup.messenger.setMessageHandler(null);
+        windowSetup.setMessageHandler(null);
     }
 
     @Override

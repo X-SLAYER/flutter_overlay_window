@@ -3,7 +3,9 @@ import 'dart:developer';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_overlay_window/src/models/overlay_position.dart';
-import 'package:flutter_overlay_window/src/overlay_config.dart';
+
+import 'enums/enums_export.dart';
+import 'models/windows_size.dart';
 
 class FlutterOverlayWindow {
   FlutterOverlayWindow._();

@@ -1,5 +1,6 @@
 package flutter.overlay.window.flutter_overlay_window;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -68,6 +69,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private Point szWindow = new Point();
     private Timer mTrayAnimationTimer;
     private TrayAnimationTimerTask mTrayTimerTask;
+    WindowSetup windowSetup = WindowSetup.getInstance();
 
     @Nullable
     @Override
@@ -91,6 +93,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         instance = null;
     }
 
+    @SuppressLint("WrongConstant")
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -140,7 +143,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             }
         });
         overlayMessageChannel.setMessageHandler((message, reply) -> {
-            WindowSetup.messenger.send(message);
+            windowSetup.getMessenger().send(message);
         });
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
@@ -156,21 +159,21 @@ public class OverlayService extends Service implements View.OnTouchListener {
         int dx = startX == OverlayConstants.DEFAULT_XY ? 0 : startX;
         int dy = startY == OverlayConstants.DEFAULT_XY ? -statusBarHeightPx() : startY;
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowSetup.width == -1999 ? -1 : WindowSetup.width,
-                WindowSetup.height != -1999 ? WindowSetup.height : screenHeight(),
+                windowSetup.getWidth() == -1999 ? -1 : windowSetup.getWidth(),
+                windowSetup.getHeight() != -1999 ? windowSetup.getHeight() : screenHeight(),
                 0,
                 -statusBarHeightPx(),
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
-                WindowSetup.flag | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                windowSetup.getFlag() | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                         | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                         | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
                         | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT
         );
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && WindowSetup.flag == clickableFlag) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && windowSetup.getFlag() == clickableFlag) {
             params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER;
         }
-        params.gravity = WindowSetup.gravity;
+        params.gravity = windowSetup.getGravity();
         flutterView.setOnTouchListener(this);
         windowManager.addView(flutterView, params);
         moveOverlay(dx, dy, null);
@@ -218,14 +221,15 @@ public class OverlayService extends Service implements View.OnTouchListener {
     }
 
 
+    @SuppressLint("WrongConstant")
     private void updateOverlayFlag(MethodChannel.Result result, String flag) {
         if (windowManager != null) {
-            WindowSetup.setFlag(flag);
+            windowSetup.setFlag(flag);
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
-            params.flags = WindowSetup.flag | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
+            params.flags = windowSetup.getFlag() | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
                     WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
                     WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && WindowSetup.flag == clickableFlag) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && windowSetup.getFlag() == clickableFlag) {
                 params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER;
             } else {
                 params.alpha = 1;
@@ -242,7 +246,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
             params.width = (width == -1999 || width == -1) ? -1 : dpToPx(width);
             params.height = (height != 1999 || height != -1) ? dpToPx(height) : height;
-            WindowSetup.enableDrag = enableDrag;
+            windowSetup.setEnableDrag(enableDrag);
             windowManager.updateViewLayout(flutterView, params);
             result.success(true);
         } else {
@@ -306,12 +310,12 @@ public class OverlayService extends Service implements View.OnTouchListener {
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, pendingFlags);
         final int notifyIcon = getDrawableResourceId("mipmap", "launcher");
-        Notification notification = new NotificationCompat.Builder(this, OverlayConstants.CHANNEL_ID)
-                .setContentTitle(WindowSetup.overlayTitle)
-                .setContentText(WindowSetup.overlayContent)
+        @SuppressLint("WrongConstant") Notification notification = new NotificationCompat.Builder(this, OverlayConstants.CHANNEL_ID)
+                .setContentTitle(windowSetup.getOverlayTitle())
+                .setContentText(windowSetup.getOverlayContent())
                 .setSmallIcon(notifyIcon == 0 ? R.drawable.notification_icon : notifyIcon)
                 .setContentIntent(pendingIntent)
-                .setVisibility(WindowSetup.notificationVisibility)
+                .setVisibility(windowSetup.getNotificationVisibility())
                 .build();
         startForeground(OverlayConstants.NOTIFICATION_ID, notification);
         instance = this;
@@ -349,7 +353,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
     @Override
     public boolean onTouch(View view, MotionEvent event) {
-        if (windowManager != null && WindowSetup.enableDrag) {
+        if (windowManager != null && windowSetup.isEnableDrag()) {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
@@ -365,12 +369,12 @@ public class OverlayService extends Service implements View.OnTouchListener {
                     }
                     lastX = event.getRawX();
                     lastY = event.getRawY();
-                    boolean invertX = WindowSetup.gravity == (Gravity.TOP | Gravity.RIGHT)
-                            || WindowSetup.gravity == (Gravity.CENTER | Gravity.RIGHT)
-                            || WindowSetup.gravity == (Gravity.BOTTOM | Gravity.RIGHT);
-                    boolean invertY = WindowSetup.gravity == (Gravity.BOTTOM | Gravity.LEFT)
-                            || WindowSetup.gravity == Gravity.BOTTOM
-                            || WindowSetup.gravity == (Gravity.BOTTOM | Gravity.RIGHT);
+                    boolean invertX = windowSetup.getGravity() == (Gravity.TOP | Gravity.RIGHT)
+                            || windowSetup.getGravity() == (Gravity.CENTER | Gravity.RIGHT)
+                            || windowSetup.getGravity() == (Gravity.BOTTOM | Gravity.RIGHT);
+                    boolean invertY = windowSetup.getGravity() == (Gravity.BOTTOM | Gravity.LEFT)
+                            || windowSetup.getGravity() == Gravity.BOTTOM
+                            || windowSetup.getGravity() == (Gravity.BOTTOM | Gravity.RIGHT);
                     int xx = params.x + ((int) dx * (invertX ? -1 : 1));
                     int yy = params.y + ((int) dy * (invertY ? -1 : 1));
                     params.x = xx;
@@ -383,7 +387,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                     lastYPosition = params.y;
-                    if (!WindowSetup.positionGravity.equals("none")) {
+                    if (!windowSetup.getPositionGravity().equals("none")) {
                         if (windowManager == null) return false;
                         windowManager.updateViewLayout(flutterView, params);
                         mTrayTimerTask = new TrayAnimationTimerTask();
@@ -407,7 +411,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         public TrayAnimationTimerTask() {
             super();
             mDestY = lastYPosition;
-            switch (WindowSetup.positionGravity) {
+            switch (windowSetup.getPositionGravity()) {
                 case "auto":
                     mDestX = (params.x + (flutterView.getWidth() / 2)) <= szWindow.x / 2 ? 0 : szWindow.x - flutterView.getWidth();
                     return;
