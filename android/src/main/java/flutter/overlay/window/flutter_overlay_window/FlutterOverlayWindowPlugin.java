@@ -38,7 +38,6 @@ public class FlutterOverlayWindowPlugin implements
         FlutterPlugin, ActivityAware, BasicMessageChannel.MessageHandler, MethodCallHandler,
         PluginRegistry.ActivityResultListener {
 
-
     private MethodChannel channel;
     private Context context;
     private Activity mActivity;

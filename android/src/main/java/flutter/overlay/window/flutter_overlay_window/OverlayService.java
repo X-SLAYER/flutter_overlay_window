@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import flutter.overlay.window.flutter_overlay_window.utils.Utils;
 import io.flutter.embedding.android.FlutterTextureView;
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
@@ -45,11 +46,9 @@ import io.flutter.plugin.common.MethodChannel;
 public class OverlayService extends Service implements View.OnTouchListener {
     private final int DEFAULT_NAV_BAR_HEIGHT_DP = 48;
     private final int DEFAULT_STATUS_BAR_HEIGHT_DP = 25;
-
     private Integer mStatusBarHeight = -1;
     private Integer mNavigationBarHeight = -1;
     private Resources mResources;
-
     public static final String INTENT_EXTRA_IS_CLOSE_WINDOW = "IsCloseWindow";
 
     private static OverlayService instance;
@@ -161,9 +160,9 @@ public class OverlayService extends Service implements View.OnTouchListener {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 windowSetup.getWidth() == -1999 ? -1 : windowSetup.getWidth(),
                 windowSetup.getHeight() != -1999 ? windowSetup.getHeight() : screenHeight(),
-                0,
-                -statusBarHeightPx(),
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
+                startX,
+                startY,
+                Utils.getOverlayFlag(),
                 windowSetup.getFlag() | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                         | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                         | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
@@ -351,6 +350,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         return mResources.getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View view, MotionEvent event) {
         if (windowManager != null && windowSetup.isEnableDrag()) {
