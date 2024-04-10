@@ -109,12 +109,23 @@ void overlayMain() {
  /// closes overlay if open
  await FlutterOverlayWindow.closeOverlay();
 
- /// broadcast data to and from overlay app
+ /// Broadcast data to and from overlay app.
+ /// This method may return `false` when invoked from the overlay while the application is closed.
+ /// Returns `true` if the data was sent successfully, otherwise `false`.
  await FlutterOverlayWindow.shareData("Hello from the other side");
 
  /// streams message shared between overlay and main app
   FlutterOverlayWindow.overlayListener.listen((event) {
       log("Current Event: $event");
+    });
+
+ /// Overlay status stream.
+ /// Emit `true` when overlay is showing, and `false` when overlay is closed.
+ /// Emit value only once for every state change.
+ /// Doesn't emit a change when the overlay is already showing and [showOverlay] is called,
+ /// as in this case the overlay will almost immediately reopen.
+  FlutterOverlayWindow.overlayStatusListener.listen((event) {
+      print("Overlay status: $event");
     });
 
  /// use [OverlayFlag.focusPointer] when you want to use fields that show keyboards
