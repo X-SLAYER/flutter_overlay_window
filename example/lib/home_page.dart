@@ -1,6 +1,5 @@
+import 'dart:async';
 import 'dart:developer';
-import 'dart:isolate';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
@@ -13,27 +12,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const String _kPortNameOverlay = 'OVERLAY';
-  static const String _kPortNameHome = 'UI';
-  final _receivePort = ReceivePort();
-  SendPort? homePort;
+  StreamSubscription<dynamic>? _overlaySubscription;
   String? latestMessageFromOverlay;
 
   @override
   void initState() {
     super.initState();
-    if (homePort != null) return;
-    final res = IsolateNameServer.registerPortWithName(
-      _receivePort.sendPort,
-      _kPortNameHome,
-    );
-    log("$res: OVERLAY");
-    _receivePort.listen((message) {
-      log("message from OVERLAY: $message");
+    _overlaySubscription = FlutterOverlayWindow.overlayListener.listen((message) {
+      if(!mounted) return;
       setState(() {
         latestMessageFromOverlay = 'Latest Message From Overlay: $message';
       });
     });
+  }
+
+  @override
+  void dispose() {
+    _overlaySubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -110,9 +106,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 20.0),
             TextButton(
               onPressed: () {
-                homePort ??=
-                    IsolateNameServer.lookupPortByName(_kPortNameOverlay);
-                homePort?.send('Send to overlay: ${DateTime.now()}');
+                FlutterOverlayWindow.shareData('Send to overlay: ${DateTime.now()}');
               },
               child: const Text("Send message to overlay"),
             ),
