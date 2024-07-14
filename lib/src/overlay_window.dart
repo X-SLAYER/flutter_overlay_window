@@ -116,7 +116,7 @@ class FlutterOverlayWindow {
     return _res;
   }
 
-  /// Update whether overlay is dragable or not
+  /// Update whether overlay is draggable or not
   static Future<bool?> setEnableDrag(bool enableDrag) async {
     final bool? _res = await _overlayChannel
         .invokeMethod<bool?>('setEnableDrag', {'enableDrag': enableDrag});
