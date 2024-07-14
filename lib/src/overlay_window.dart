@@ -116,6 +116,13 @@ class FlutterOverlayWindow {
     return _res;
   }
 
+  /// Update whether overlay is dragable or not
+  static Future<bool?> setEnableDrag(bool enableDrag) async {
+    final bool? _res = await _overlayChannel
+        .invokeMethod<bool?>('setEnableDrag', {'enableDrag': enableDrag});
+    return _res;
+  }
+
   /// Update the overlay size in the screen
   static Future<bool?> resizeOverlay(
     int width,

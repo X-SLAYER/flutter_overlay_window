@@ -137,6 +137,9 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 int height = call.argument("height");
                 boolean enableDrag = call.argument("enableDrag");
                 resizeOverlay(width, height, enableDrag, result);
+            }else if (call.method.equals("setEnableDrag")) {
+                boolean enableDrag = call.argument("enableDrag");
+                setEnableDrag(enableDrag, result);
             }
         });
         overlayMessageChannel.setMessageHandler((message, reply) -> {
@@ -242,6 +245,17 @@ public class OverlayService extends Service implements View.OnTouchListener {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
             params.width = (width == -1999 || width == -1) ? -1 : dpToPx(width);
             params.height = (height != 1999 || height != -1) ? dpToPx(height) : height;
+            WindowSetup.enableDrag = enableDrag;
+            windowManager.updateViewLayout(flutterView, params);
+            result.success(true);
+        } else {
+            result.success(false);
+        }
+    }
+
+    private void setEnableDrag(boolean enableDrag, MethodChannel.Result result) {
+        if (windowManager != null) {
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
             WindowSetup.enableDrag = enableDrag;
             windowManager.updateViewLayout(flutterView, params);
             result.success(true);
@@ -439,6 +453,4 @@ public class OverlayService extends Service implements View.OnTouchListener {
             });
         }
     }
-
-
 }
