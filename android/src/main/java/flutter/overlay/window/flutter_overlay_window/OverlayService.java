@@ -35,8 +35,11 @@ import java.util.TimerTask;
 
 import io.flutter.embedding.android.FlutterTextureView;
 import io.flutter.embedding.android.FlutterView;
+import io.flutter.FlutterInjector;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterEngineCache;
+import io.flutter.embedding.engine.FlutterEngineGroup;
+import io.flutter.embedding.engine.dart.DartExecutor;
 import io.flutter.plugin.common.BasicMessageChannel;
 import io.flutter.plugin.common.JSONMessageCodec;
 import io.flutter.plugin.common.MethodChannel;
@@ -55,8 +58,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
     public static boolean isRunning = false;
     private WindowManager windowManager = null;
     private FlutterView flutterView;
-    private MethodChannel flutterChannel = new MethodChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.OVERLAY_TAG);
-    private BasicMessageChannel<Object> overlayMessageChannel = new BasicMessageChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
+    private MethodChannel flutterChannel;
+    private BasicMessageChannel<Object> overlayMessageChannel;
     private int clickableFlag = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 
@@ -295,6 +298,30 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
     @Override
     public void onCreate() {
+        // Get the cached FlutterEngine
+        FlutterEngine flutterEngine = FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG);
+
+        if (flutterEngine == null) {
+            // Handle the error if engine is not found
+            Log.e("OverlayService", "Flutter engine not found, hence creating new flutter engine");
+            FlutterEngineGroup engineGroup = new FlutterEngineGroup(this);
+            DartExecutor.DartEntrypoint entryPoint = new DartExecutor.DartEntrypoint(
+                FlutterInjector.instance().flutterLoader().findAppBundlePath(),
+                "overlayMain"
+            );  // "overlayMain" is custom entry point
+
+            flutterEngine = engineGroup.createAndRunEngine(this, entryPoint);
+
+            // Cache the created FlutterEngine for future use
+            FlutterEngineCache.getInstance().put(OverlayConstants.CACHED_TAG, flutterEngine);
+        }
+
+        // Create the MethodChannel with the properly initialized FlutterEngine
+        if (flutterEngine != null) {
+            flutterChannel = new MethodChannel(flutterEngine.getDartExecutor(), OverlayConstants.OVERLAY_TAG);
+            overlayMessageChannel = new BasicMessageChannel(flutterEngine.getDartExecutor(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
+        }
+
         createNotificationChannel();
         Intent notificationIntent = new Intent(this, FlutterOverlayWindowPlugin.class);
         int pendingFlags;
