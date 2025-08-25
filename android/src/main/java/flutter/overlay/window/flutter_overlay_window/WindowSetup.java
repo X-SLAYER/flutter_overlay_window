@@ -1,6 +1,5 @@
 package flutter.overlay.window.flutter_overlay_window;
 
-
 import android.view.Gravity;
 import android.view.WindowManager;
 
@@ -20,7 +19,9 @@ public abstract class WindowSetup {
     static String positionGravity = "none";
     static int notificationVisibility = NotificationCompat.VISIBILITY_PRIVATE;
     static boolean enableDrag = false;
-
+    static boolean enableBounce = false;
+    static int bounceHeight = 20; // dp
+    static int bounceDuration = 1500;  // ms interval per tick
 
     static void setNotificationVisibility(String name) {
         if (name.equalsIgnoreCase("visibilityPublic")) {

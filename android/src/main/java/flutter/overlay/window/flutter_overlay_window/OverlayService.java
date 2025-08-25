@@ -23,6 +23,9 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -71,6 +74,9 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private Point szWindow = new Point();
     private Timer mTrayAnimationTimer;
     private TrayAnimationTimerTask mTrayTimerTask;
+    private int bounceBaseY = 0; // px
+    private int bounceAmplitudePx = 0; // px
+    private ObjectAnimator bounceAnimator;
 
     @Nullable
     @Override
@@ -82,6 +88,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
     @Override
     public void onDestroy() {
         Log.d("OverLay", "Destroying the overlay window service");
+        stopBounce();
+        stopTrayAnimation();
         if (windowManager != null) {
             windowManager.removeView(flutterView);
             windowManager = null;
@@ -102,6 +110,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
         int startY = intent.getIntExtra("startY", OverlayConstants.DEFAULT_XY);
         boolean isCloseWindow = intent.getBooleanExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, false);
         if (isCloseWindow) {
+            stopBounce();
+            stopTrayAnimation();
             if (windowManager != null) {
                 windowManager.removeView(flutterView);
                 windowManager = null;
@@ -112,6 +122,8 @@ public class OverlayService extends Service implements View.OnTouchListener {
             return START_STICKY;
         }
         if (windowManager != null) {
+            stopBounce();
+            stopTrayAnimation();
             windowManager.removeView(flutterView);
             windowManager = null;
             flutterView.detachFromFlutterEngine();
@@ -139,7 +151,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 int width = call.argument("width");
                 int height = call.argument("height");
                 boolean enableDrag = call.argument("enableDrag");
-                resizeOverlay(width, height, enableDrag, result);
+                boolean enableBounce = call.argument("enableBounce");
+                int bounceHeight = call.argument("bounceHeight");
+                int bounceDuration = call.argument("bounceDuration");
+                resizeOverlay(width, height, enableDrag, enableBounce, bounceHeight, bounceDuration, result);
             }
         });
         overlayMessageChannel.setMessageHandler((message, reply) -> {
@@ -177,6 +192,12 @@ public class OverlayService extends Service implements View.OnTouchListener {
         flutterView.setOnTouchListener(this);
         windowManager.addView(flutterView, params);
         moveOverlay(dx, dy, null);
+        if (WindowSetup.enableBounce) {
+            WindowManager.LayoutParams p = (WindowManager.LayoutParams) flutterView.getLayoutParams();
+            bounceBaseY = p.y;
+            bounceAmplitudePx = dpToPx(WindowSetup.bounceHeight);
+            startBounce();
+        }
         return START_STICKY;
     }
 
@@ -240,13 +261,22 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
     }
 
-    private void resizeOverlay(int width, int height, boolean enableDrag, MethodChannel.Result result) {
+    private void resizeOverlay(int width, int height, boolean enableDrag, boolean enableBounce, int bounceHeight, int bounceDuration, MethodChannel.Result result) {
         if (windowManager != null) {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
             params.width = (width == -1999 || width == -1) ? -1 : dpToPx(width);
             params.height = (height != 1999 || height != -1) ? dpToPx(height) : height;
             WindowSetup.enableDrag = enableDrag;
+            WindowSetup.enableBounce = enableBounce;
+            WindowSetup.bounceHeight = bounceHeight;
+            WindowSetup.bounceDuration = bounceDuration;
             windowManager.updateViewLayout(flutterView, params);
+            if (WindowSetup.enableBounce) {
+                bounceAmplitudePx = dpToPx(WindowSetup.bounceHeight);
+                startBounce();
+            } else {
+                stopBounce();
+            }
             result.success(true);
         } else {
             result.success(false);
@@ -380,6 +410,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
+                    stopBounce();
                     dragging = false;
                     lastX = event.getRawX();
                     lastY = event.getRawY();
@@ -416,6 +447,11 @@ public class OverlayService extends Service implements View.OnTouchListener {
                         mTrayTimerTask = new TrayAnimationTimerTask();
                         mTrayAnimationTimer = new Timer();
                         mTrayAnimationTimer.schedule(mTrayTimerTask, 0, 25);
+                    }
+                    if (WindowSetup.enableBounce) {
+                        // reset base to current position and resume bounce
+                        bounceBaseY = params.y;
+                        startBounce();
                     }
                     return false;
                 default:
@@ -467,5 +503,42 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
     }
 
+    private void startBounce() {
+        stopBounce();
+        if (flutterView == null) return;
+        if (bounceAmplitudePx <= 0) bounceAmplitudePx = dpToPx(WindowSetup.bounceHeight);
+        float from = -bounceAmplitudePx;
+        float to = bounceAmplitudePx;
+        bounceAnimator = ObjectAnimator.ofFloat(flutterView, View.TRANSLATION_Y, from, to);
+        // Interpret bounceDuration as duration per full cycle (ms)
+        int duration = WindowSetup.bounceDuration <= 50 ? WindowSetup.bounceDuration * 100 : WindowSetup.bounceDuration;
+        duration = Math.max(300, duration);
+        bounceAnimator.setDuration(duration);
+        bounceAnimator.setRepeatMode(ValueAnimator.REVERSE);
+        bounceAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        bounceAnimator.setInterpolator(new LinearInterpolator());
+        bounceAnimator.start();
+    }
 
+    private void stopBounce() {
+        if (bounceAnimator != null) {
+            bounceAnimator.cancel();
+            bounceAnimator = null;
+        }
+        if (flutterView != null) {
+            flutterView.clearAnimation();
+            flutterView.setTranslationY(0f);
+        }
+    }
+
+    private void stopTrayAnimation() {
+        if (mTrayTimerTask != null) {
+            mTrayTimerTask.cancel();
+            mTrayTimerTask = null;
+        }
+        if (mTrayAnimationTimer != null) {
+            mTrayAnimationTimer.cancel();
+            mTrayAnimationTimer = null;
+        }
+    }
 }

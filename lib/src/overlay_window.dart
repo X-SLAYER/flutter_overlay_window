@@ -36,6 +36,12 @@ class FlutterOverlayWindow {
   ///
   /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
   ///
+  /// `enableBounce` to enable/disable bouncing the overlay over the screen and default is "false"
+  ///
+  /// `bounceHeight` the bounce height and default is 20
+  ///
+  /// `bounceDuration` the bounce speed and default is 1500 in milliseconds
+  ///
   /// `positionGravity` the overlay postion after drag and default is [PositionGravity.none]
   ///
   /// `startPosition` the overlay start position and default is null
@@ -50,22 +56,25 @@ class FlutterOverlayWindow {
     bool enableDrag = false,
     PositionGravity positionGravity = PositionGravity.none,
     OverlayPosition? startPosition,
+    bool enableBounce = false,
+    int bounceHeight = 20,
+    int bounceDuration = 1500,
   }) async {
-    await _channel.invokeMethod(
-      'showOverlay',
-      {
-        "height": height,
-        "width": width,
-        "alignment": alignment.name,
-        "flag": flag.name,
-        "overlayTitle": overlayTitle,
-        "overlayContent": overlayContent,
-        "enableDrag": enableDrag,
-        "notificationVisibility": visibility.name,
-        "positionGravity": positionGravity.name,
-        "startPosition": startPosition?.toMap(),
-      },
-    );
+    await _channel.invokeMethod('showOverlay', {
+      "height": height,
+      "width": width,
+      "alignment": alignment.name,
+      "flag": flag.name,
+      "overlayTitle": overlayTitle,
+      "overlayContent": overlayContent,
+      "enableDrag": enableDrag,
+      "notificationVisibility": visibility.name,
+      "positionGravity": positionGravity.name,
+      "startPosition": startPosition?.toMap(),
+      "enableBounce": enableBounce,
+      "bounceHeight": bounceHeight,
+      "bounceDuration": bounceDuration,
+    });
   }
 
   /// Check if overlay permission is granted
@@ -121,15 +130,19 @@ class FlutterOverlayWindow {
     int width,
     int height,
     bool enableDrag,
+    bool enableBounce,
+    int bounceHeight,
+    int bounceDuration,
   ) async {
-    final bool? _res = await _overlayChannel.invokeMethod<bool?>(
-      'resizeOverlay',
-      {
-        'width': width,
-        'height': height,
-        'enableDrag': enableDrag,
-      },
-    );
+    final bool? _res = await _overlayChannel
+        .invokeMethod<bool?>('resizeOverlay', {
+          'width': width,
+          'height': height,
+          'enableDrag': enableDrag,
+          'enableBounce': enableBounce,
+          'bounceHeight': bounceHeight,
+          'bounceDuration': bounceDuration,
+        });
     return _res;
   }
 

@@ -86,6 +86,9 @@ public class FlutterOverlayWindowPlugin implements
             String overlayContent = call.argument("overlayContent");
             String notificationVisibility = call.argument("notificationVisibility");
             boolean enableDrag = call.argument("enableDrag");
+            boolean enableBounce = call.argument("enableBounce");
+            int bounceHeight = call.argument("bounceHeight");
+            int bounceDuration = call.argument("bounceDuration");
             String positionGravity = call.argument("positionGravity");
             Map<String, Integer> startPosition = call.argument("startPosition");
             int startX = startPosition != null ? startPosition.getOrDefault("x", OverlayConstants.DEFAULT_XY) : OverlayConstants.DEFAULT_XY;
@@ -95,6 +98,9 @@ public class FlutterOverlayWindowPlugin implements
             WindowSetup.width = width != null ? width : -1;
             WindowSetup.height = height != null ? height : -1;
             WindowSetup.enableDrag = enableDrag;
+            WindowSetup.enableBounce = enableBounce;
+            WindowSetup.bounceHeight = bounceHeight;
+            WindowSetup.bounceDuration = bounceDuration;
             WindowSetup.setGravityFromAlignment(alignment != null ? alignment : "center");
             WindowSetup.setFlag(flag != null ? flag : "flagNotFocusable");
             WindowSetup.overlayTitle = overlayTitle;
