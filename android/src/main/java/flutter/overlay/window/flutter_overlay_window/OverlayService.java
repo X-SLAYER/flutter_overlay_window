@@ -112,10 +112,16 @@ public class OverlayService extends Service implements View.OnTouchListener {
             return START_STICKY;
         }
         if (windowManager != null) {
+            // Recreating the view in place (e.g. a second showOverlay() call while already
+            // running) — NOT calling stopSelf() here. stopSelf() only schedules the service to
+            // stop later; it doesn't return immediately, so execution used to fall through and
+            // re-add a new view anyway, which then got torn down moments later once Android
+            // actually processed the pending stop via onDestroy(). Net effect: the overlay
+            // flashed visible for an instant, then vanished for good on every subsequent
+            // showOverlay() call. Just tear down the old view and keep the service running.
             windowManager.removeView(flutterView);
             windowManager = null;
             flutterView.detachFromFlutterEngine();
-            stopSelf();
         }
         isRunning = true;
         Log.d("onStartCommand", "Service started");
