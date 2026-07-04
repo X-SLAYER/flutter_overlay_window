@@ -126,6 +126,8 @@ public class FlutterOverlayWindowPlugin implements
                 final Intent i = new Intent(context, OverlayService.class);
                 context.stopService(i);
                 result.success(true);
+            } else {
+                result.success(false);
             }
             return;
         } else {
