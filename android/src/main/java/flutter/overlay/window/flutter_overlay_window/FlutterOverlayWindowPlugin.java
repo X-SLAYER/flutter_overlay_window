@@ -112,9 +112,6 @@ public class FlutterOverlayWindowPlugin implements
         } else if (call.method.equals("isOverlayActive")) {
             result.success(OverlayService.isRunning);
             return;
-        } else if (call.method.equals("isOverlayActive")) {
-            result.success(OverlayService.isRunning);
-            return;
         } else if (call.method.equals("moveOverlay")) {
             int x = call.argument("x");
             int y = call.argument("y");
@@ -126,6 +123,11 @@ public class FlutterOverlayWindowPlugin implements
                 final Intent i = new Intent(context, OverlayService.class);
                 context.stopService(i);
                 result.success(true);
+            } else {
+                // Nothing to stop, but the Result must still be completed or the
+                // Dart future never resolves. Closing an overlay that is already
+                // closed is a no-op, not an error.
+                result.success(false);
             }
             return;
         } else {
