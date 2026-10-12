@@ -60,6 +60,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private FlutterView flutterView;
     private MethodChannel flutterChannel;
     private BasicMessageChannel<Object> overlayMessageChannel;
+    private final WindowSetup windowSetup = WindowSetup.getInstance();
     private int clickableFlag = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 
@@ -151,7 +152,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             }
         });
         overlayMessageChannel.setMessageHandler((message, reply) -> {
-            WindowSetup.messenger.send(message);
+            windowSetup.getMessenger().send(message);
         });
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
@@ -173,21 +174,21 @@ public class OverlayService extends Service implements View.OnTouchListener {
         int dx = startX == OverlayConstants.DEFAULT_XY ? 0 : startX;
         int dy = startY == OverlayConstants.DEFAULT_XY ? -statusBarHeightPx() : startY;
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowSetup.width == -1999 ? -1 : WindowSetup.width,
-                WindowSetup.height != -1999 ? WindowSetup.height : screenHeight(),
+                windowSetup.getWidth() == -1999 ? -1 : windowSetup.getWidth(),
+                windowSetup.getHeight() != -1999 ? windowSetup.getHeight() : screenHeight(),
                 0,
                 -statusBarHeightPx(),
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
-                WindowSetup.flag | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                windowSetup.getFlag() | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                         | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                         | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
                         | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT
         );
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && WindowSetup.flag == clickableFlag) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && windowSetup.getFlag() == clickableFlag) {
             params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER;
         }
-        params.gravity = WindowSetup.gravity;
+        params.gravity = windowSetup.getGravity();
         flutterView.setOnTouchListener(this);
         windowManager.addView(flutterView, params);
         moveOverlay(dx, dy, null);
@@ -282,7 +283,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         int minVisibleWidth = Math.max(overlayWidth / 5, 20); // At least 20% or 20px visible
         int minVisibleHeight = Math.max(overlayHeight / 5, 20); // At least 20% or 20px visible
         
-        if ((WindowSetup.gravity & Gravity.RIGHT) == Gravity.RIGHT) {
+        if ((windowSetup.getGravity() & Gravity.RIGHT) == Gravity.RIGHT) {
             // Right-based coordinate system - allow going off left edge but keep right edge visible
             int maxLeftOffset = rightBound - minVisibleWidth;
             int originalX = params.x;
@@ -290,7 +291,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             if (originalX != params.x) {
                 Log.d("OverlayService", "SOFT RIGHT gravity: X constrained from " + originalX + " to " + params.x);
             }
-        } else if ((WindowSetup.gravity & Gravity.LEFT) == Gravity.LEFT) {
+        } else if ((windowSetup.getGravity() & Gravity.LEFT) == Gravity.LEFT) {
             // Left-based coordinate system - allow going off right edge but keep left edge visible
             int maxRightOffset = leftBound + overlayWidth - minVisibleWidth;
             int originalX = params.x;
@@ -309,7 +310,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             }
         }
         
-        if ((WindowSetup.gravity & Gravity.BOTTOM) == Gravity.BOTTOM) {
+        if ((windowSetup.getGravity() & Gravity.BOTTOM) == Gravity.BOTTOM) {
             // Bottom-based coordinate system - allow going off top edge but keep bottom edge visible
             int maxTopOffset = bottomBound - minVisibleHeight;
             int originalY = params.y;
@@ -317,7 +318,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             if (originalY != params.y) {
                 Log.d("OverlayService", "SOFT BOTTOM gravity: Y constrained from " + originalY + " to " + params.y);
             }
-        } else if ((WindowSetup.gravity & Gravity.TOP) == Gravity.TOP) {
+        } else if ((windowSetup.getGravity() & Gravity.TOP) == Gravity.TOP) {
             // Top-based coordinate system - allow going off bottom edge but keep top edge visible
             int maxBottomOffset = topBound + overlayHeight - minVisibleHeight;
             int originalY = params.y;
@@ -347,7 +348,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         int rightBound = bounds[2];
         int bottomBound = bounds[3];
         
-        if ((WindowSetup.gravity & Gravity.RIGHT) == Gravity.RIGHT) {
+        if ((windowSetup.getGravity() & Gravity.RIGHT) == Gravity.RIGHT) {
             // Right-based coordinate system
             // params.x is offset from right edge, 0 = right edge, positive = left of right edge
             int originalX = params.x;
@@ -355,7 +356,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             if (originalX != params.x) {
                 Log.d("OverlayService", "RIGHT gravity: X constrained from " + originalX + " to " + params.x);
             }
-        } else if ((WindowSetup.gravity & Gravity.LEFT) == Gravity.LEFT) {
+        } else if ((windowSetup.getGravity() & Gravity.LEFT) == Gravity.LEFT) {
             // Left-based coordinate system  
             // params.x is offset from left edge, 0 = left edge, positive = right of left edge
             int originalX = params.x;
@@ -377,7 +378,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             }
         }
         
-        if ((WindowSetup.gravity & Gravity.BOTTOM) == Gravity.BOTTOM) {
+        if ((windowSetup.getGravity() & Gravity.BOTTOM) == Gravity.BOTTOM) {
             // Bottom-based coordinate system
             // params.y is offset from bottom edge, 0 = bottom edge, positive = above bottom edge
             int originalY = params.y;
@@ -385,7 +386,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             if (originalY != params.y) {
                 Log.d("OverlayService", "BOTTOM gravity: Y constrained from " + originalY + " to " + params.y);
             }
-        } else if ((WindowSetup.gravity & Gravity.TOP) == Gravity.TOP) {
+        } else if ((windowSetup.getGravity() & Gravity.TOP) == Gravity.TOP) {
             // Top-based coordinate system
             // params.y is offset from top edge, 0 = top edge, positive = below top edge
             int originalY = params.y;
@@ -411,12 +412,12 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
     private void updateOverlayFlag(MethodChannel.Result result, String flag) {
         if (windowManager != null) {
-            WindowSetup.setFlag(flag);
+            windowSetup.setFlag(flag);
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
-            params.flags = WindowSetup.flag | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
+            params.flags = windowSetup.getFlag() | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
                     WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
                     WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && WindowSetup.flag == clickableFlag) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && windowSetup.getFlag() == clickableFlag) {
                 params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER;
             } else {
                 params.alpha = 1;
@@ -433,7 +434,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
             params.width = (width == -1999 || width == -1) ? -1 : dpToPx(width);
             params.height = (height != 1999 || height != -1) ? dpToPx(height) : height;
-            WindowSetup.enableDrag = enableDrag;
+            windowSetup.setEnableDrag(enableDrag);
             windowManager.updateViewLayout(flutterView, params);
             result.success(true);
         } else {
@@ -522,11 +523,11 @@ public class OverlayService extends Service implements View.OnTouchListener {
             notifyIcon = R.drawable.notification_icon;
         }
         Notification notification = new NotificationCompat.Builder(this, OverlayConstants.CHANNEL_ID)
-                .setContentTitle(WindowSetup.overlayTitle)
-                .setContentText(WindowSetup.overlayContent)
+                .setContentTitle(windowSetup.getOverlayTitle())
+                .setContentText(windowSetup.getOverlayContent())
                 .setSmallIcon(notifyIcon)
                 .setContentIntent(pendingIntent)
-                .setVisibility(WindowSetup.notificationVisibility)
+                .setVisibility(windowSetup.getNotificationVisibility())
                 .build();
         startForeground(OverlayConstants.NOTIFICATION_ID, notification);
         instance = this;
@@ -570,7 +571,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View view, MotionEvent event) {
-        if (windowManager == null || !WindowSetup.enableDrag) {
+        if (windowManager == null || !windowSetup.isEnableDrag()) {
             return false;
         }
         WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
@@ -607,7 +608,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 boolean wasDragging = dragging;
                 dragging = false;  // Reset dragging state for next touch sequence
                 
-                if (WindowSetup.positionGravity.equals("none")) {
+                if (windowSetup.getPositionGravity().equals("none")) {
                     return wasDragging;
                 }
 
@@ -621,16 +622,16 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
     private void updateOverlayPosition(WindowManager.LayoutParams params, float dx, float dy) {
         // During dragging, allow free movement but constrain to safe boundaries
-        boolean invertX = WindowSetup.gravity == (Gravity.TOP | Gravity.RIGHT)
-                || WindowSetup.gravity == (Gravity.CENTER | Gravity.RIGHT)
-                || WindowSetup.gravity == (Gravity.BOTTOM | Gravity.RIGHT);
-        boolean invertY = WindowSetup.gravity == (Gravity.BOTTOM | Gravity.LEFT)
-                || WindowSetup.gravity == Gravity.BOTTOM
-                || WindowSetup.gravity == (Gravity.BOTTOM | Gravity.RIGHT);
+        boolean invertX = windowSetup.getGravity() == (Gravity.TOP | Gravity.RIGHT)
+                || windowSetup.getGravity() == (Gravity.CENTER | Gravity.RIGHT)
+                || windowSetup.getGravity() == (Gravity.BOTTOM | Gravity.RIGHT);
+        boolean invertY = windowSetup.getGravity() == (Gravity.BOTTOM | Gravity.LEFT)
+                || windowSetup.getGravity() == Gravity.BOTTOM
+                || windowSetup.getGravity() == (Gravity.BOTTOM | Gravity.RIGHT);
 
         // Log initial position before movement
         Log.d("OverlayService", "Drag movement - dx: " + dx + ", dy: " + dy + 
-              ", gravity: " + WindowSetup.gravity + ", invertX: " + invertX + ", invertY: " + invertY);
+              ", gravity: " + windowSetup.getGravity() + ", invertX: " + invertX + ", invertY: " + invertY);
 
         // Apply movement
         int oldX = params.x;
@@ -689,11 +690,11 @@ public class OverlayService extends Service implements View.OnTouchListener {
             int overlayWidth = flutterView.getWidth();
             
             // Calculate safe edge positions based on window gravity coordinate system
-            if ((WindowSetup.gravity & Gravity.RIGHT) == Gravity.RIGHT) {
+            if ((windowSetup.getGravity() & Gravity.RIGHT) == Gravity.RIGHT) {
                 // Right-based coordinate system: x=0 is right edge of screen
                 rightEdgeX = 0;                          // Right edge
                 leftEdgeX = rightBound - overlayWidth;   // Left edge (within safe bounds)
-            } else if ((WindowSetup.gravity & Gravity.LEFT) == Gravity.LEFT) {
+            } else if ((windowSetup.getGravity() & Gravity.LEFT) == Gravity.LEFT) {
                 // Left-based coordinate system: x=0 is left edge of screen
                 leftEdgeX = leftBound;                   // Left edge (respecting safe area)
                 rightEdgeX = rightBound - overlayWidth;  // Right edge (within safe bounds)
@@ -707,14 +708,14 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 rightEdgeX = (rightBound - overlayWidth / 2) - screenCenterX;
             }
             
-            switch (WindowSetup.positionGravity) {
+            switch (windowSetup.getPositionGravity()) {
                 case "auto":
                     // For auto, choose left or right based on current position
                     int currentAbsoluteX;
-                    if ((WindowSetup.gravity & Gravity.RIGHT) == Gravity.RIGHT) {
+                    if ((windowSetup.getGravity() & Gravity.RIGHT) == Gravity.RIGHT) {
                         // In right-based system, convert to absolute position
                         currentAbsoluteX = rightBound - params.x - (overlayWidth / 2);
-                    } else if ((WindowSetup.gravity & Gravity.LEFT) == Gravity.LEFT) {
+                    } else if ((windowSetup.getGravity() & Gravity.LEFT) == Gravity.LEFT) {
                         // In left-based system, convert to absolute position
                         currentAbsoluteX = params.x + (overlayWidth / 2);
                     } else {
