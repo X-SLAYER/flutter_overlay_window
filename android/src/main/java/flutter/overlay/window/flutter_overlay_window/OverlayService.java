@@ -68,6 +68,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private float lastX, lastY;
     private int lastYPosition;
     private boolean dragging;
+    private int dragSlopSquared = 576; // (24px)^2, overwritten by system touch slop in onStartCommand
     private static final float MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER = 0.8f;
     private Point szWindow = new Point();
     private Timer mTrayAnimationTimer;
@@ -487,6 +488,9 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
     @Override
     public void onCreate() {
+        int slop = android.view.ViewConfiguration.get(this).getScaledTouchSlop();
+        dragSlopSquared = slop * slop;
+
         // Get the cached FlutterEngine
         FlutterEngine flutterEngine = FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG);
 
@@ -619,7 +623,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             case MotionEvent.ACTION_MOVE:
                 float dx = event.getRawX() - lastX;
                 float dy = event.getRawY() - lastY;
-                if (!dragging && dx * dx + dy * dy < 25) {
+                if (!dragging && dx * dx + dy * dy < dragSlopSquared) {
                     return false;
                 }
                 updateOverlayPosition(params, dx, dy);
