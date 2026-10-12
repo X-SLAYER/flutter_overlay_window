@@ -39,6 +39,10 @@ class FlutterOverlayWindow {
   /// `positionGravity` the overlay postion after drag and default is [PositionGravity.none]
   ///
   /// `startPosition` the overlay start position and default is null
+  ///
+  /// `notificationIcon` the name of a drawable or mipmap resource in your app
+  /// (e.g. `"ic_stat_overlay"` for `android/app/src/main/res/drawable/ic_stat_overlay.png`)
+  /// used as the notification small icon. Defaults to the app launcher icon.
   static Future<void> showOverlay({
     int height = WindowSize.fullCover,
     int width = WindowSize.matchParent,
@@ -50,6 +54,7 @@ class FlutterOverlayWindow {
     bool enableDrag = false,
     PositionGravity positionGravity = PositionGravity.none,
     OverlayPosition? startPosition,
+    String? notificationIcon,
   }) async {
     await _channel.invokeMethod(
       'showOverlay',
@@ -64,8 +69,27 @@ class FlutterOverlayWindow {
         "notificationVisibility": visibility.name,
         "positionGravity": positionGravity.name,
         "startPosition": startPosition?.toMap(),
+        "notificationIcon": notificationIcon,
       },
     );
+  }
+
+  /// Update the foreground notification while the overlay is showing.
+  ///
+  /// Only the provided values are changed. `icon` follows the same rules as
+  /// `notificationIcon` in [showOverlay].
+  ///
+  /// Returns `true` if the notification was updated, `false` if no overlay is active.
+  static Future<bool> updateNotification({
+    String? title,
+    String? content,
+    String? icon,
+  }) async {
+    final bool? res = await _channel.invokeMethod<bool>(
+      'updateNotification',
+      {"title": title, "content": content, "icon": icon},
+    );
+    return res ?? false;
   }
 
   /// Check if overlay permission is granted

@@ -42,104 +42,155 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Plugin example app'),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            TextButton(
-              onPressed: () async {
-                final status = await FlutterOverlayWindow.isPermissionGranted();
-                log("Is Permission Granted: $status");
-              },
-              child: const Text("Check Permission"),
-            ),
-            const SizedBox(height: 10.0),
-            TextButton(
-              onPressed: () async {
-                final bool? res =
-                    await FlutterOverlayWindow.requestPermission();
-                log("status: $res");
-              },
-              child: const Text("Request Permission"),
-            ),
-            const SizedBox(height: 10.0),
-            TextButton(
-              onPressed: () async {
-                if (await FlutterOverlayWindow.isActive()) return;
-                await FlutterOverlayWindow.showOverlay(
-                  enableDrag: true,
-                  overlayTitle: "X-SLAYER",
-                  overlayContent: 'Overlay Enabled',
-                  flag: OverlayFlag.defaultFlag,
-                  visibility: NotificationVisibility.visibilityPublic,
-                  positionGravity: PositionGravity.auto,
-                  height: (MediaQuery.of(context).size.height * 0.6).toInt(),
-                  width: WindowSize.matchParent,
-                  startPosition: const OverlayPosition(0, -259),
-                );
-              },
-              child: const Text("Show Overlay"),
-            ),
-            const SizedBox(height: 10.0),
-            TextButton(
-              onPressed: () async {
-                final status = await FlutterOverlayWindow.isActive();
-                log("Is Active?: $status");
-              },
-              child: const Text("Is Active?"),
-            ),
-            const SizedBox(height: 10.0),
-            TextButton(
-              onPressed: () async {
-                await FlutterOverlayWindow.resizeOverlay(
-                  WindowSize.matchParent,
-                  (MediaQuery.of(context).size.height * 5).toInt(),
-                  false,
-                );
-              },
-              child: const Text("Update Overlay"),
-            ),
-            const SizedBox(height: 10.0),
-            TextButton(
-              onPressed: () {
-                log('Try to close');
-                FlutterOverlayWindow.closeOverlay()
-                    .then((value) => log('STOPPED: alue: $value'));
-              },
-              child: const Text("Close Overlay"),
-            ),
-            const SizedBox(height: 20.0),
-            TextButton(
-              onPressed: () {
-                homePort ??=
-                    IsolateNameServer.lookupPortByName(_kPortNameOverlay);
-                homePort?.send('Send to overlay: ${DateTime.now()}');
-              },
-              child: const Text("Send message to overlay"),
-            ),
-            const SizedBox(height: 20.0),
-            TextButton(
-              onPressed: () {
-                FlutterOverlayWindow.getOverlayPosition().then((value) {
-                  log('Overlay Position: $value');
-                  setState(() {
-                    latestMessageFromOverlay = 'Overlay Position: $value';
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              TextButton(
+                onPressed: () async {
+                  final status =
+                      await FlutterOverlayWindow.isPermissionGranted();
+                  log("Is Permission Granted: $status");
+                },
+                child: const Text("Check Permission"),
+              ),
+              const SizedBox(height: 10.0),
+              TextButton(
+                onPressed: () async {
+                  final bool? res =
+                      await FlutterOverlayWindow.requestPermission();
+                  log("status: $res");
+                },
+                child: const Text("Request Permission"),
+              ),
+              const SizedBox(height: 10.0),
+              TextButton(
+                onPressed: () async {
+                  if (await FlutterOverlayWindow.isActive()) return;
+                  await FlutterOverlayWindow.showOverlay(
+                    enableDrag: true,
+                    overlayTitle: "X-SLAYER",
+                    overlayContent: 'Overlay Enabled',
+                    flag: OverlayFlag.defaultFlag,
+                    visibility: NotificationVisibility.visibilityPublic,
+                    positionGravity: PositionGravity.auto,
+                    height: 250,
+                    width: 250,
+                    startPosition: const OverlayPosition(0, -259),
+                  );
+                },
+                child: const Text("Show Overlay"),
+              ),
+              const SizedBox(height: 10.0),
+              TextButton(
+                onPressed: () async {
+                  if (await FlutterOverlayWindow.isActive()) return;
+                  await FlutterOverlayWindow.showOverlay(
+                    enableDrag: true,
+                    overlayTitle: "X-SLAYER",
+                    overlayContent: 'Overlay with custom icon',
+                    visibility: NotificationVisibility.visibilityPublic,
+                    positionGravity: PositionGravity.auto,
+                    height: 250,
+                    width: 250,
+                    // res/drawable/ic_stat_overlay.xml
+                    notificationIcon: "ic_stat_overlay",
+                  );
+                },
+                child: const Text("Show Overlay (custom notification icon)"),
+              ),
+              const SizedBox(height: 10.0),
+              TextButton(
+                onPressed: () async {
+                  final status = await FlutterOverlayWindow.isActive();
+                  log("Is Active?: $status");
+                },
+                child: const Text("Is Active?"),
+              ),
+              const SizedBox(height: 10.0),
+              TextButton(
+                onPressed: () async {
+                  await FlutterOverlayWindow.resizeOverlay(
+                    WindowSize.matchParent,
+                    (MediaQuery.of(context).size.height * 5).toInt(),
+                    false,
+                  );
+                },
+                child: const Text("Update Overlay"),
+              ),
+              const SizedBox(height: 10.0),
+              TextButton(
+                onPressed: () {
+                  log('Try to close');
+                  FlutterOverlayWindow.closeOverlay()
+                      .then((value) => log('STOPPED: alue: $value'));
+                },
+                child: const Text("Close Overlay"),
+              ),
+              const SizedBox(height: 20.0),
+              TextButton(
+                onPressed: () {
+                  homePort ??=
+                      IsolateNameServer.lookupPortByName(_kPortNameOverlay);
+                  homePort?.send('Send to overlay: ${DateTime.now()}');
+                },
+                child: const Text("Send message to overlay"),
+              ),
+              const SizedBox(height: 20.0),
+              TextButton(
+                onPressed: () {
+                  FlutterOverlayWindow.getOverlayPosition().then((value) {
+                    log('Overlay Position: $value');
+                    setState(() {
+                      latestMessageFromOverlay = 'Overlay Position: $value';
+                    });
                   });
-                });
-              },
-              child: const Text("Get overlay position"),
-            ),
-            const SizedBox(height: 20.0),
-            TextButton(
-              onPressed: () {
-                FlutterOverlayWindow.moveOverlay(
-                  const OverlayPosition(0, 0),
-                );
-              },
-              child: const Text("Move overlay position to (0, 0)"),
-            ),
-            const SizedBox(height: 20),
-            Text(latestMessageFromOverlay ?? ''),
-          ],
+                },
+                child: const Text("Get overlay position"),
+              ),
+              const SizedBox(height: 20.0),
+              TextButton(
+                onPressed: () {
+                  FlutterOverlayWindow.moveOverlay(
+                    const OverlayPosition(0, 0),
+                  );
+                },
+                child: const Text("Move overlay position to (0, 0)"),
+              ),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () async {
+                  final updated = await FlutterOverlayWindow.updateNotification(
+                    title: "Notification updated",
+                    content: 'Updated at ${TimeOfDay.now().format(context)}',
+                    // res/drawable/ic_stat_alt.xml
+                    icon: "ic_stat_alt",
+                  );
+                  setState(() {
+                    latestMessageFromOverlay = 'Notification updated: $updated';
+                  });
+                },
+                child: const Text("Update notification (title, content, icon)"),
+              ),
+              const SizedBox(height: 10.0),
+              TextButton(
+                onPressed: () async {
+                  // A missing resource should fall back to the launcher icon.
+                  final updated = await FlutterOverlayWindow.updateNotification(
+                    content: 'Missing icon falls back to default',
+                    icon: "does_not_exist",
+                  );
+                  setState(() {
+                    latestMessageFromOverlay = 'Notification updated: $updated';
+                  });
+                },
+                child: const Text("Update notification (missing icon)"),
+              ),
+              const SizedBox(height: 20),
+              Text(latestMessageFromOverlay ?? ''),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
