@@ -43,6 +43,7 @@ public class FlutterOverlayWindowPlugin implements
     private Activity mActivity;
     private BasicMessageChannel<Object> messenger;
     private final WindowSetup windowSetup = WindowSetup.getInstance();
+    private ActivityPluginBinding activityBinding;
     private Result pendingResult;
     final int REQUEST_CODE_FOR_OVERLAY_PERMISSION = 1248;
 
@@ -63,11 +64,21 @@ public class FlutterOverlayWindowPlugin implements
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-        pendingResult = result;
         if (call.method.equals("checkPermission")) {
             result.success(checkOverlayPermission());
         } else if (call.method.equals("requestPermission")) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkOverlayPermission()) {
+                    result.success(true);
+                    return;
+                }
+                if (mActivity == null) {
+                    result.error("NO_ACTIVITY", "requestPermission requires a foreground activity", null);
+                    return;
+                }
+                if (pendingResult != null) {
+                    pendingResult.success(checkOverlayPermission());
+                }
                 pendingResult = result;
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
                 intent.setData(Uri.parse("package:" + mActivity.getPackageName()));
@@ -143,8 +154,7 @@ public class FlutterOverlayWindowPlugin implements
 
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
-        mActivity = binding.getActivity();
-        binding.addActivityResultListener(this);
+        attachToActivity(binding);
         if (FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG) == null) {
             FlutterEngineGroup enn = new FlutterEngineGroup(context);
             DartExecutor.DartEntrypoint dEntry = new DartExecutor.DartEntrypoint(
@@ -157,17 +167,31 @@ public class FlutterOverlayWindowPlugin implements
 
     @Override
     public void onDetachedFromActivityForConfigChanges() {
-        this.mActivity = null;
+        detachFromActivity();
     }
 
     @Override
     public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-        this.mActivity = binding.getActivity();
+        attachToActivity(binding);
     }
 
     @Override
     public void onDetachedFromActivity() {
-        this.mActivity = null;
+        detachFromActivity();
+    }
+
+    private void attachToActivity(@NonNull ActivityPluginBinding binding) {
+        activityBinding = binding;
+        mActivity = binding.getActivity();
+        binding.addActivityResultListener(this);
+    }
+
+    private void detachFromActivity() {
+        if (activityBinding != null) {
+            activityBinding.removeActivityResultListener(this);
+            activityBinding = null;
+        }
+        mActivity = null;
     }
 
     @Override
