@@ -112,6 +112,8 @@ void overlayMain() {
   /// `positionGravity` the overlay postion after drag and default is [PositionGravity.none]
   ///
   /// `startPosition` the overlay start position and default is null
+  ///
+  /// `notificationIcon` name of a drawable/mipmap resource in your app used as the notification icon, default is the launcher icon
  await FlutterOverlayWindow.showOverlay();
 
  /// closes overlay if open
@@ -146,6 +148,13 @@ void overlayMain() {
  ///
  /// `return` the current overlay position
  await FlutterOverlayWindow.getOverlayPosition()
+
+ /// Update the notification while the overlay is showing (only the given values change)
+ ///
+ /// `icon` name of a drawable/mipmap resource, e.g. res/drawable/ic_stat_overlay.png -> "ic_stat_overlay"
+ ///
+ /// `return` false if no overlay is active
+ await FlutterOverlayWindow.updateNotification(title: "Recording", content: "00:42", icon: "ic_stat_overlay")
 
 ```
 

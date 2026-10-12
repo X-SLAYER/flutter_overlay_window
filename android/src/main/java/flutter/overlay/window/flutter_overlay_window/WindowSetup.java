@@ -20,6 +20,7 @@ public final class WindowSetup {
     private String positionGravity = "none";
     private int notificationVisibility = NotificationCompat.VISIBILITY_PRIVATE;
     private boolean enableDrag = false;
+    private String notificationIcon = null;
 
     private WindowSetup() {
     }
@@ -98,6 +99,14 @@ public final class WindowSetup {
 
     public void setEnableDrag(boolean enableDrag) {
         this.enableDrag = enableDrag;
+    }
+
+    public String getNotificationIcon() {
+        return notificationIcon;
+    }
+
+    public void setNotificationIcon(String notificationIcon) {
+        this.notificationIcon = notificationIcon;
     }
 
     public void setNotificationVisibility(String name) {

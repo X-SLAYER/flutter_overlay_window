@@ -513,24 +513,49 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
 
         createNotificationChannel();
+        startForeground(OverlayConstants.NOTIFICATION_ID, buildNotification());
+        instance = this;
+    }
+
+    public static boolean updateNotification() {
+        if (instance == null) {
+            return false;
+        }
+        NotificationManager manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.notify(OverlayConstants.NOTIFICATION_ID, instance.buildNotification());
+        return true;
+    }
+
+    private Notification buildNotification() {
         Intent notificationIntent = new Intent(this, FlutterOverlayWindowPlugin.class);
         int pendingFlags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ?
                 PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT;
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, pendingFlags);
 
-        int notifyIcon = getDrawableResourceId("mipmap", "launcher");
-        if (notifyIcon == 0) {
-            notifyIcon = R.drawable.notification_icon;
-        }
-        Notification notification = new NotificationCompat.Builder(this, OverlayConstants.CHANNEL_ID)
+        return new NotificationCompat.Builder(this, OverlayConstants.CHANNEL_ID)
                 .setContentTitle(windowSetup.getOverlayTitle())
                 .setContentText(windowSetup.getOverlayContent())
-                .setSmallIcon(notifyIcon)
+                .setSmallIcon(resolveNotificationIcon())
                 .setContentIntent(pendingIntent)
                 .setVisibility(windowSetup.getNotificationVisibility())
+                .setOnlyAlertOnce(true)
                 .build();
-        startForeground(OverlayConstants.NOTIFICATION_ID, notification);
-        instance = this;
+    }
+
+    private int resolveNotificationIcon() {
+        String custom = windowSetup.getNotificationIcon();
+        if (custom != null && !custom.isEmpty()) {
+            int id = getDrawableResourceId("drawable", custom);
+            if (id == 0) {
+                id = getDrawableResourceId("mipmap", custom);
+            }
+            if (id != 0) {
+                return id;
+            }
+            Log.w("OverlayService", "Notification icon '" + custom + "' not found in drawable or mipmap, using default");
+        }
+        int id = getDrawableResourceId("mipmap", "ic_launcher");
+        return id != 0 ? id : R.drawable.notification_icon;
     }
 
     private void createNotificationChannel() {
@@ -547,7 +572,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
     }
 
     private int getDrawableResourceId(String resType, String name) {
-        return getApplicationContext().getResources().getIdentifier(String.format("ic_%s", name), resType, getApplicationContext().getPackageName());
+        return getApplicationContext().getResources().getIdentifier(name, resType, getApplicationContext().getPackageName());
     }
 
     private int dpToPx(int dp) {
