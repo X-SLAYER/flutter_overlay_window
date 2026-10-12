@@ -68,6 +68,7 @@ public class FlutterOverlayWindowPlugin implements
             result.success(checkOverlayPermission());
         } else if (call.method.equals("requestPermission")) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                pendingResult = result;
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
                 intent.setData(Uri.parse("package:" + mActivity.getPackageName()));
                 mActivity.startActivityForResult(intent, REQUEST_CODE_FOR_OVERLAY_PERMISSION);
@@ -188,7 +189,10 @@ public class FlutterOverlayWindowPlugin implements
     @Override
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CODE_FOR_OVERLAY_PERMISSION) {
-            pendingResult.success(checkOverlayPermission());
+            if (pendingResult != null) {
+                pendingResult.success(checkOverlayPermission());
+                pendingResult = null;
+            }
             return true;
         }
         return false;
