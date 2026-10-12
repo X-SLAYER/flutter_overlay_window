@@ -105,7 +105,6 @@ public class FlutterOverlayWindowPlugin implements
             int startX = startPosition != null ? startPosition.getOrDefault("x", OverlayConstants.DEFAULT_XY) : OverlayConstants.DEFAULT_XY;
             int startY = startPosition != null ? startPosition.getOrDefault("y", OverlayConstants.DEFAULT_XY) : OverlayConstants.DEFAULT_XY;
 
-
             windowSetup.setWidth(width != null ? width : -1);
             windowSetup.setHeight(height != null ? height : -1);
             windowSetup.setEnableDrag(enableDrag);
