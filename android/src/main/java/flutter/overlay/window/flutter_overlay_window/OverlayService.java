@@ -68,7 +68,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private float lastX, lastY;
     private int lastYPosition;
     private boolean dragging;
-    private int dragSlopSquared = 576; // (24px)^2, overwritten by system touch slop in onStartCommand
+    private int dragSlopSquared = 576; // (24px)^2, overwritten by system touch slop in onCreate
     private static final float MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER = 0.8f;
     private Point szWindow = new Point();
     private Timer mTrayAnimationTimer;
