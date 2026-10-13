@@ -109,6 +109,17 @@ void overlayMain() {
   ///
   /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
   ///
+  /// `enableDismiss` to enable drag-to-dismiss: a dismiss zone appears at the bottom of the screen
+  /// during drag, dropping the overlay on it closes the overlay. Default is "false"
+  ///
+  /// `dismissIcon` the name of a drawable or mipmap resource used as the dismiss zone icon.
+  /// Falls back to a built-in X-in-circle if not set or not found.
+  ///
+  /// `dismissIconColor` the color of the X icon in the default dismiss zone (ARGB int). Ignored when `dismissIcon` is set.
+  ///
+  /// `dismissBackgroundColor` the background color of the default dismiss zone circle (ARGB int). Ignored when `dismissIcon` is set.
+  ///
+
   /// `positionGravity` the overlay postion after drag and default is [PositionGravity.none]
   ///
   /// `startPosition` the overlay start position and default is null
@@ -155,8 +166,38 @@ void overlayMain() {
  ///
  /// `return` false if no overlay is active
  await FlutterOverlayWindow.updateNotification(title: "Recording", content: "00:42", icon: "ic_stat_overlay")
-
 ```
+
+### Drag-to-dismiss
+
+Enable a dismiss zone that appears at the bottom of the screen while dragging the overlay. Dropping the overlay on it closes it.
+
+```dart
+ /// Basic usage — built-in X-in-circle icon
+ await FlutterOverlayWindow.showOverlay(
+   enableDrag: true,
+   enableDismiss: true,
+ );
+
+ /// Custom colors for the built-in icon
+ await FlutterOverlayWindow.showOverlay(
+   enableDrag: true,
+   enableDismiss: true,
+   dismissIconColor: 0xFFFFFFFF,       // white X
+   dismissBackgroundColor: 0xCCE53935,  // semi-transparent red circle
+ );
+
+ /// Custom drawable resource
+ /// Place your icon in android/app/src/main/res/drawable/ (e.g. ic_dismiss.xml)
+ /// and pass the resource name without the extension:
+ await FlutterOverlayWindow.showOverlay(
+   enableDrag: true,
+   enableDismiss: true,
+   dismissIcon: "ic_dismiss",
+ );
+```
+
+When `dismissIcon` is set and found in the app's `drawable` or `mipmap` resources, it replaces the built-in icon. The `dismissIconColor` and `dismissBackgroundColor` options only apply to the built-in icon and are ignored when a custom drawable is used.
 
 ```dart
 
