@@ -9,7 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.graphics.PixelFormat;
 import android.app.PendingIntent;
 import android.graphics.Point;
@@ -19,6 +22,7 @@ import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.widget.ImageView;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -74,6 +78,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private Timer mTrayAnimationTimer;
     private TrayAnimationTimerTask mTrayTimerTask;
 
+    private ImageView dismissView;
+    private static final int DISMISS_SIZE_DP = 56;
+    private static final int DISMISS_BOTTOM_MARGIN_DP = 40;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -92,6 +100,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             mTrayTimerTask.cancel();
             mTrayTimerTask = null;
         }
+        removeDismissView();
         if (windowManager != null) {
             windowManager.removeView(flutterView);
             windowManager = null;
@@ -597,6 +606,55 @@ public class OverlayService extends Service implements View.OnTouchListener {
         return mResources.getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
     }
 
+    private void createDismissView() {
+        if (dismissView != null || windowManager == null) return;
+        int sizePx = dpToPx(DISMISS_SIZE_DP);
+        dismissView = new ImageView(this);
+        String customIcon = windowSetup.getDismissIcon();
+        Drawable resolved = null;
+        if (customIcon != null && !customIcon.isEmpty()) {
+            int id = getDrawableResourceId("drawable", customIcon);
+            if (id == 0) id = getDrawableResourceId("mipmap", customIcon);
+            if (id != 0) resolved = getResources().getDrawable(id, getTheme());
+        }
+        if (resolved != null) {
+            dismissView.setImageDrawable(resolved);
+        } else {
+            dismissView.setImageDrawable(new DismissDrawable(sizePx,
+                    windowSetup.getDismissBackgroundColor(), windowSetup.getDismissIconColor()));
+        }
+
+        WindowManager.LayoutParams dismissParams = new WindowManager.LayoutParams(
+                sizePx, sizePx,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                        : WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                PixelFormat.TRANSLUCENT);
+        dismissParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+        dismissParams.y = dpToPx(DISMISS_BOTTOM_MARGIN_DP);
+        windowManager.addView(dismissView, dismissParams);
+    }
+
+    private void removeDismissView() {
+        if (dismissView != null && windowManager != null) {
+            windowManager.removeView(dismissView);
+        }
+        dismissView = null;
+    }
+
+    private boolean isOverDismissZone(MotionEvent event) {
+        if (dismissView == null) return false;
+        int sizePx = dpToPx(DISMISS_SIZE_DP);
+        int centerX = szWindow.x / 2;
+        int centerY = szWindow.y - dpToPx(DISMISS_BOTTOM_MARGIN_DP) - sizePx / 2;
+        return Math.abs(event.getRawX() - centerX) < sizePx
+                && Math.abs(event.getRawY() - centerY) < sizePx;
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View view, MotionEvent event) {
@@ -630,9 +688,16 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 lastX = event.getRawX();
                 lastY = event.getRawY();
                 dragging = true;
+                createDismissView();
                 return true;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                if (dragging && isOverDismissZone(event)) {
+                    removeDismissView();
+                    cleanupAndStopSelf();
+                    return true;
+                }
+                removeDismissView();
                 lastYPosition = params.y;
                 boolean wasDragging = dragging;
                 dragging = false;  // Reset dragging state for next touch sequence
@@ -809,6 +874,38 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 }
             });
         }
+    }
+
+    private static class DismissDrawable extends Drawable {
+        private final Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint xPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final int size;
+
+        DismissDrawable(int size, int backgroundColor, int iconColor) {
+            this.size = size;
+            circlePaint.setColor(backgroundColor);
+            circlePaint.setStyle(Paint.Style.FILL);
+            xPaint.setColor(iconColor);
+            xPaint.setStyle(Paint.Style.STROKE);
+            xPaint.setStrokeWidth(size / 14f);
+            xPaint.setStrokeCap(Paint.Cap.ROUND);
+        }
+
+        @Override
+        public void draw(Canvas canvas) {
+            float cx = size / 2f;
+            float cy = size / 2f;
+            canvas.drawCircle(cx, cy, size / 2f, circlePaint);
+            float arm = size / 5f;
+            canvas.drawLine(cx - arm, cy - arm, cx + arm, cy + arm, xPaint);
+            canvas.drawLine(cx + arm, cy - arm, cx - arm, cy + arm, xPaint);
+        }
+
+        @Override public void setAlpha(int alpha) { circlePaint.setAlpha(alpha); }
+        @Override public void setColorFilter(android.graphics.ColorFilter cf) {}
+        @Override public int getOpacity() { return PixelFormat.TRANSLUCENT; }
+        @Override public int getIntrinsicWidth() { return size; }
+        @Override public int getIntrinsicHeight() { return size; }
     }
 
 }
