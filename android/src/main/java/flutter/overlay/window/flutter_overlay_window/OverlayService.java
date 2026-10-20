@@ -70,6 +70,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
     private Handler mAnimationHandler = new Handler();
     private float lastX, lastY;
+    private float dragRemainderX, dragRemainderY; // accumulate sub-pixel drag deltas
     private int lastYPosition;
     private boolean dragging;
     private int dragSlopSquared = 576; // (24px)^2, overwritten by system touch slop in onCreate
@@ -290,58 +291,65 @@ public class OverlayService extends Service implements View.OnTouchListener {
         int bottomBound = bounds[3];
         
         // During dragging, allow the overlay to go partially off-screen but keep at least 20% visible
-        int minVisibleWidth = Math.max(overlayWidth / 5, 20); // At least 20% or 20px visible
-        int minVisibleHeight = Math.max(overlayHeight / 5, 20); // At least 20% or 20px visible
+        // Keep 50% of the icon on-screen (only 50% can go past the edge)
+        int minVisibleWidth = (int) (overlayWidth * 0.50f);
+        int minVisibleHeight = (int) (overlayHeight * 0.50f);
+        int allowedOffscreenX = overlayWidth - minVisibleWidth;
+        int allowedOffscreenY = overlayHeight - minVisibleHeight;
         
         if ((windowSetup.getGravity() & Gravity.RIGHT) == Gravity.RIGHT) {
-            // Right-based coordinate system - allow going off left edge but keep right edge visible
-            int maxLeftOffset = rightBound - minVisibleWidth;
+            // Right-based coordinate system - allow going off edges symmetrically
             int originalX = params.x;
-            params.x = Math.max(maxLeftOffset, params.x);
+            int minX = -allowedOffscreenX;
+            int maxX = rightBound - minVisibleWidth;
+            params.x = Math.max(minX, Math.min(params.x, maxX));
             if (originalX != params.x) {
                 Log.d("OverlayService", "SOFT RIGHT gravity: X constrained from " + originalX + " to " + params.x);
             }
         } else if ((windowSetup.getGravity() & Gravity.LEFT) == Gravity.LEFT) {
-            // Left-based coordinate system - allow going off right edge but keep left edge visible
-            int maxRightOffset = leftBound + overlayWidth - minVisibleWidth;
+            // Left-based coordinate system - allow going off edges symmetrically
             int originalX = params.x;
-            params.x = Math.min(maxRightOffset, params.x);
+            int minX = leftBound - allowedOffscreenX;
+            int maxX = rightBound - minVisibleWidth;
+            params.x = Math.max(minX, Math.min(params.x, maxX));
             if (originalX != params.x) {
                 Log.d("OverlayService", "SOFT LEFT gravity: X constrained from " + originalX + " to " + params.x);
             }
         } else {
-            // Center-based coordinate system - allow going off edges but keep center visible
-            int maxLeftOffset = leftBound - (szWindow.x / 2) + minVisibleWidth;
-            int maxRightOffset = rightBound - (szWindow.x / 2) - (overlayWidth - minVisibleWidth);
+            // Center-based coordinate system - allow going off edges symmetrically
             int originalX = params.x;
-            params.x = Math.max(maxLeftOffset, Math.min(params.x, maxRightOffset));
+            int minX = leftBound - (szWindow.x / 2) + (overlayWidth / 2) - allowedOffscreenX;
+            int maxX = rightBound - (szWindow.x / 2) - (overlayWidth / 2) + allowedOffscreenX;
+            params.x = Math.max(minX, Math.min(params.x, maxX));
             if (originalX != params.x) {
                 Log.d("OverlayService", "SOFT CENTER gravity: X constrained from " + originalX + " to " + params.x);
             }
         }
         
         if ((windowSetup.getGravity() & Gravity.BOTTOM) == Gravity.BOTTOM) {
-            // Bottom-based coordinate system - allow going off top edge but keep bottom edge visible
-            int maxTopOffset = bottomBound - minVisibleHeight;
+            // Bottom-based coordinate system - allow going off edges symmetrically
             int originalY = params.y;
-            params.y = Math.max(maxTopOffset, params.y);
+            int minY = -allowedOffscreenY;
+            int maxY = bottomBound - minVisibleHeight;
+            params.y = Math.max(minY, Math.min(params.y, maxY));
             if (originalY != params.y) {
                 Log.d("OverlayService", "SOFT BOTTOM gravity: Y constrained from " + originalY + " to " + params.y);
             }
         } else if ((windowSetup.getGravity() & Gravity.TOP) == Gravity.TOP) {
-            // Top-based coordinate system - allow going off bottom edge but keep top edge visible
-            int maxBottomOffset = topBound + overlayHeight - minVisibleHeight;
+            // Top-based coordinate system - allow going off edges symmetrically
             int originalY = params.y;
-            params.y = Math.min(maxBottomOffset, params.y);
+            int minY = topBound - allowedOffscreenY;
+            int maxY = bottomBound - minVisibleHeight;
+            params.y = Math.max(minY, Math.min(params.y, maxY));
             if (originalY != params.y) {
                 Log.d("OverlayService", "SOFT TOP gravity: Y constrained from " + originalY + " to " + params.y);
             }
         } else {
-            // Center-based coordinate system - allow going off edges but keep center visible
-            int maxTopOffset = topBound - (szWindow.y / 2) + minVisibleHeight;
-            int maxBottomOffset = bottomBound - (szWindow.y / 2) - (overlayHeight - minVisibleHeight);
+            // Center-based coordinate system - allow going off edges symmetrically
             int originalY = params.y;
-            params.y = Math.max(maxTopOffset, Math.min(params.y, maxBottomOffset));
+            int minY = topBound - (szWindow.y / 2) + (overlayHeight / 2) - allowedOffscreenY;
+            int maxY = bottomBound - (szWindow.y / 2) - (overlayHeight / 2) + allowedOffscreenY;
+            params.y = Math.max(minY, Math.min(params.y, maxY));
             if (originalY != params.y) {
                 Log.d("OverlayService", "SOFT CENTER gravity: Y constrained from " + originalY + " to " + params.y);
             }
@@ -677,19 +685,41 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 dragging = false;
                 lastX = event.getRawX();
                 lastY = event.getRawY();
+                dragRemainderX = 0f;
+                dragRemainderY = 0f;
                 return false;
             case MotionEvent.ACTION_MOVE:
+                if (!dragging) {
+                    float totalDx = event.getRawX() - lastX;
+                    float totalDy = event.getRawY() - lastY;
+                    if (totalDx * totalDx + totalDy * totalDy < dragSlopSquared) {
+                        return false;
+                    }
+                    // Threshold crossed: begin drag smoothly from current position without a sudden jump
+                    dragging = true;
+                    lastX = event.getRawX();
+                    lastY = event.getRawY();
+                    return true;
+                }
                 float dx = event.getRawX() - lastX;
                 float dy = event.getRawY() - lastY;
-                if (!dragging && dx * dx + dy * dy < dragSlopSquared) {
-                    return false;
-                }
-                updateOverlayPosition(params, dx, dy);
                 lastX = event.getRawX();
                 lastY = event.getRawY();
+                updateOverlayPosition(params, dx, dy);
                 dragging = true;
                 createDismissView();
                 return true;
+            // case MotionEvent.ACTION_MOVE:
+            //     float dx = event.getRawX() - lastX;
+            //     float dy = event.getRawY() - lastY;
+            //     if (!dragging && dx * dx + dy * dy < dragSlopSquared) {
+            //         return false;
+            //     }
+            //     updateOverlayPosition(params, dx, dy);
+            //     lastX = event.getRawX();
+            //     lastY = event.getRawY();
+            //     dragging = true;
+            //     return true;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 if (dragging && isOverDismissZone(event)) {
@@ -723,24 +753,35 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 || windowSetup.getGravity() == Gravity.BOTTOM
                 || windowSetup.getGravity() == (Gravity.BOTTOM | Gravity.RIGHT);
 
-        // Log initial position before movement
-        Log.d("OverlayService", "Drag movement - dx: " + dx + ", dy: " + dy + 
-              ", gravity: " + windowSetup.getGravity() + ", invertX: " + invertX + ", invertY: " + invertY);
+        // Accumulate float deltas (including leftover fractions from previous frame)
+        // to prevent sub-pixel loss when dragging slowly
+        float effectiveDx = dx * (invertX ? -1 : 1) + dragRemainderX;
+        float effectiveDy = dy * (invertY ? -1 : 1) + dragRemainderY;
+        int moveX = (int) effectiveDx;
+        int moveY = (int) effectiveDy;
+        dragRemainderX = effectiveDx - moveX;
+        dragRemainderY = effectiveDy - moveY;
 
         // Apply movement
         int oldX = params.x;
         int oldY = params.y;
-        params.x += ((int) dx * (invertX ? -1 : 1));
-        params.y += ((int) dy * (invertY ? -1 : 1));
+        params.x += moveX;
+        params.y += moveY;
         
         Log.d("OverlayService", "Position after movement - X: " + oldX + " -> " + params.x + 
               ", Y: " + oldY + " -> " + params.y);
-        
+
         // During dragging, only apply soft constraints to prevent going completely off-screen
         // This allows free movement while keeping the overlay partially visible
         applySoftBoundaryConstraints(params, flutterView.getWidth(), flutterView.getHeight());
         
         Log.d("OverlayService", "Position after soft constraints - X: " + params.x + ", Y: " + params.y);
+
+        
+        // // Apply safe boundary constraints that respect screen and system bar boundaries
+        // constrainToSafeBoundaries(params, flutterView.getWidth(), flutterView.getHeight());
+        
+        // Log.d("OverlayService", "Position after constraints - X: " + params.x + ", Y: " + params.y);
 
         if (windowManager != null) {
             windowManager.updateViewLayout(flutterView, params);

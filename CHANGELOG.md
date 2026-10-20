@@ -1,3 +1,9 @@
+## 1.0.1
+
+### Fixes
+- Improve overlay drag handling with sub-pixel accuracy for smoother position updates (#197)
+- Use the system touch slop as the drag threshold (#193)
+
 ## 1.0.0
 
 ### Features
