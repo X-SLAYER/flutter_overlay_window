@@ -1,6 +1,9 @@
 analyzer:
   errors:
     use_build_context_synchronously: ignore
+  exclude:
+    - build/**
+    - android/**
 include: package:flutter_lints/flutter.yaml
 
 linter:
