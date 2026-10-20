@@ -489,6 +489,16 @@ public class OverlayService extends Service implements View.OnTouchListener {
         return null;
     }
 
+    public static Map<String, Double> getScreenSize() {
+        if (instance != null && instance.szWindow.x > 0 && instance.szWindow.y > 0) {
+            Map<String, Double> size = new HashMap<>();
+            size.put("width", instance.pxToDp(instance.szWindow.x));
+            size.put("height", instance.pxToDp(instance.szWindow.y));
+            return size;
+        }
+        return null;
+    }
+
     public static boolean moveOverlay(int x, int y) {
         if (instance != null && instance.flutterView != null) {
             if (instance.windowManager != null) {
