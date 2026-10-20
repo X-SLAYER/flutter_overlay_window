@@ -43,6 +43,9 @@ class FlutterOverlayWindow {
   /// `notificationIcon` the name of a drawable or mipmap resource in your app
   /// (e.g. `"ic_stat_overlay"` for `android/app/src/main/res/drawable/ic_stat_overlay.png`)
   /// used as the notification small icon. Defaults to the app launcher icon.
+  ///
+  /// `dismissIconColor` / `dismissBackgroundColor` the colors of the built-in
+  /// dismiss zone X icon and circle. Ignored when `dismissIcon` is set.
   static Future<void> showOverlay({
     int height = WindowSize.fullCover,
     int width = WindowSize.matchParent,
@@ -53,8 +56,8 @@ class FlutterOverlayWindow {
     String? overlayContent,
     bool enableDrag = false,
     bool enableDismiss = false,
-    int? dismissIconColor,
-    int? dismissBackgroundColor,
+    Color? dismissIconColor,
+    Color? dismissBackgroundColor,
     String? dismissIcon,
     PositionGravity positionGravity = PositionGravity.none,
     OverlayPosition? startPosition,
@@ -71,9 +74,10 @@ class FlutterOverlayWindow {
         "overlayContent": overlayContent,
         "enableDrag": enableDrag,
         "enableDismiss": enableDismiss,
-        if (dismissIconColor != null) "dismissIconColor": dismissIconColor,
+        if (dismissIconColor != null)
+          "dismissIconColor": _toArgbInt(dismissIconColor),
         if (dismissBackgroundColor != null)
-          "dismissBackgroundColor": dismissBackgroundColor,
+          "dismissBackgroundColor": _toArgbInt(dismissBackgroundColor),
         if (dismissIcon != null) "dismissIcon": dismissIcon,
         "notificationVisibility": visibility.name,
         "positionGravity": positionGravity.name,
@@ -81,6 +85,13 @@ class FlutterOverlayWindow {
         "notificationIcon": notificationIcon,
       },
     );
+  }
+
+  /// Converts a [Color] to a signed 32-bit ARGB int so it arrives on the
+  /// Android side as a Java `int` (matching `android.graphics.Color`).
+  static int _toArgbInt(Color color) {
+    // ignore: deprecated_member_use
+    return color.value.toSigned(32);
   }
 
   /// Update the foreground notification while the overlay is showing.

@@ -115,9 +115,9 @@ void overlayMain() {
   /// `dismissIcon` the name of a drawable or mipmap resource used as the dismiss zone icon.
   /// Falls back to a built-in X-in-circle if not set or not found.
   ///
-  /// `dismissIconColor` the color of the X icon in the default dismiss zone (ARGB int). Ignored when `dismissIcon` is set.
+  /// `dismissIconColor` the color of the X icon in the default dismiss zone (`Color`). Ignored when `dismissIcon` is set.
   ///
-  /// `dismissBackgroundColor` the background color of the default dismiss zone circle (ARGB int). Ignored when `dismissIcon` is set.
+  /// `dismissBackgroundColor` the background color of the default dismiss zone circle (`Color`). Ignored when `dismissIcon` is set.
   ///
 
   /// `positionGravity` the overlay postion after drag and default is [PositionGravity.none]
@@ -183,8 +183,8 @@ Enable a dismiss zone that appears at the bottom of the screen while dragging th
  await FlutterOverlayWindow.showOverlay(
    enableDrag: true,
    enableDismiss: true,
-   dismissIconColor: 0xFFFFFFFF,       // white X
-   dismissBackgroundColor: 0xCCE53935,  // semi-transparent red circle
+   dismissIconColor: Colors.white,                // white X
+   dismissBackgroundColor: const Color(0xCCE53935),  // semi-transparent red circle
  );
 
  /// Custom drawable resource
