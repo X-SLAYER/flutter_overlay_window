@@ -111,6 +111,27 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 10.0),
               TextButton(
                 onPressed: () async {
+                  if (await FlutterOverlayWindow.isActive()) return;
+                  await FlutterOverlayWindow.showOverlay(
+                    enableDrag: true,
+                    overlayTitle: "X-SLAYER",
+                    overlayContent: 'Overlay with trash dismiss icon',
+                    visibility: NotificationVisibility.visibilityPublic,
+                    positionGravity: PositionGravity.auto,
+                    height: 250,
+                    width: 250,
+                    // res/drawable/ic_dismiss_trash.xml
+                    dismissConfig: const OverlayDismissConfig(
+                      icon: "ic_dismiss_trash",
+                      size: 64,
+                    ),
+                  );
+                },
+                child: const Text("Show Overlay (trash dismiss icon)"),
+              ),
+              const SizedBox(height: 10.0),
+              TextButton(
+                onPressed: () async {
                   final status = await FlutterOverlayWindow.isActive();
                   log("Is Active?: $status");
                 },
