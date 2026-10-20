@@ -1,5 +1,9 @@
 ## 1.0.1
 
+### Features
+- Add drag-to-dismiss via `dismissConfig` on `showOverlay`: a target appears at the bottom of the screen while dragging, and dropping the overlay on it closes the overlay (#196)
+- Add `OverlayDismissConfig` to customize the dismiss target: `size`, `bottomMargin`, `shape` (circle or rectangle), `borderRadius`, `backgroundColor`, `iconColor`, `iconSize`, `iconStrokeWidth`, `borderWidth`, `borderColor`, a custom drawable `icon`, and hover feedback (`activeBackgroundColor`, `activeIconColor`, `activeBorderColor`, `activeScale`, `hapticFeedback`). Colors are regular Flutter `Color` values
+
 ### Fixes
 - Improve overlay drag handling with sub-pixel accuracy for smoother position updates (#197)
 - Use the system touch slop as the drag threshold (#193)

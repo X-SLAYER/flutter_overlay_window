@@ -109,6 +109,10 @@ void overlayMain() {
   ///
   /// `enableDrag` to enable/disable dragging the overlay over the screen and default is "false"
   ///
+  /// `dismissConfig` an `OverlayDismissConfig` that enables drag-to-dismiss: a target appears at the bottom
+  /// of the screen during drag, dropping the overlay on it closes the overlay. Default is null (disabled)
+  ///
+
   /// `positionGravity` the overlay postion after drag and default is [PositionGravity.none]
   ///
   /// `startPosition` the overlay start position and default is null
@@ -155,8 +159,66 @@ void overlayMain() {
  ///
  /// `return` false if no overlay is active
  await FlutterOverlayWindow.updateNotification(title: "Recording", content: "00:42", icon: "ic_stat_overlay")
-
 ```
+
+### Drag-to-dismiss
+
+Enable a dismiss zone that appears at the bottom of the screen while dragging the overlay. Dropping the overlay on it closes it.
+
+```dart
+ /// Basic usage — built-in X-in-circle target
+ await FlutterOverlayWindow.showOverlay(
+   enableDrag: true,
+   dismissConfig: const OverlayDismissConfig(),
+ );
+
+ /// Customized built-in target
+ await FlutterOverlayWindow.showOverlay(
+   enableDrag: true,
+   dismissConfig: const OverlayDismissConfig(
+     size: 64,
+     bottomMargin: 48,
+     shape: OverlayDismissShape.rectangle,
+     borderRadius: 16,
+     backgroundColor: Color(0xCC333333),
+     activeBackgroundColor: Colors.red,   // while the overlay is over the target
+     iconColor: Colors.white,
+     iconSize: 24,
+     iconStrokeWidth: 3,
+     borderWidth: 2,
+     borderColor: Colors.white24,
+     activeBorderColor: Colors.white,
+     activeScale: 1.25,
+     hapticFeedback: true,
+   ),
+ );
+
+ /// Custom drawable resource
+ /// Place your icon in android/app/src/main/res/drawable/ (e.g. ic_dismiss.xml)
+ /// and pass the resource name without the extension:
+ await FlutterOverlayWindow.showOverlay(
+   enableDrag: true,
+   dismissConfig: const OverlayDismissConfig(icon: "ic_dismiss"),
+ );
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `icon` | `null` | Drawable/mipmap resource used instead of the built-in X |
+| `size` | `56` | Width and height of the target (dp) |
+| `bottomMargin` | `40` | Distance from the bottom of the screen (dp) |
+| `shape` | `circle` | `OverlayDismissShape.circle` or `.rectangle` |
+| `borderRadius` | `12` | Corner radius for `rectangle` (dp) |
+| `backgroundColor` / `activeBackgroundColor` | `Color(0xCC333333)` | Fill color, normal / while hovered |
+| `iconColor` / `activeIconColor` | `Colors.white` | X color, normal / while hovered |
+| `iconSize` | `22` | Size of the X (dp) |
+| `iconStrokeWidth` | `4` | Stroke width of the X (dp) |
+| `borderWidth` | `0` | Border width, `0` for none (dp) |
+| `borderColor` / `activeBorderColor` | transparent | Border color, normal / while hovered |
+| `activeScale` | `1.2` | Scale applied while hovered, `1` to disable |
+| `hapticFeedback` | `true` | Vibrate when the overlay enters the target |
+
+When `icon` is set and found in the app's `drawable` or `mipmap` resources, it replaces the built-in target. The shape, color, border and icon options only apply to the built-in target; `size`, `bottomMargin`, `activeScale` and `hapticFeedback` apply to both.
 
 ```dart
 

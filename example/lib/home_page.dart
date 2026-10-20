@@ -77,6 +77,15 @@ class _HomePageState extends State<HomePage> {
                     height: 250,
                     width: 250,
                     startPosition: const OverlayPosition(0, -259),
+                    dismissConfig: const OverlayDismissConfig(
+                      shape: OverlayDismissShape.circle,
+                      borderRadius: 16,
+                      backgroundColor: Color(0xCC333333),
+                      activeBackgroundColor: Colors.red,
+                      borderWidth: 2,
+                      borderColor: Colors.white24,
+                      activeBorderColor: Colors.white,
+                    ),
                   );
                 },
                 child: const Text("Show Overlay"),
@@ -98,6 +107,27 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
                 child: const Text("Show Overlay (custom notification icon)"),
+              ),
+              const SizedBox(height: 10.0),
+              TextButton(
+                onPressed: () async {
+                  if (await FlutterOverlayWindow.isActive()) return;
+                  await FlutterOverlayWindow.showOverlay(
+                    enableDrag: true,
+                    overlayTitle: "X-SLAYER",
+                    overlayContent: 'Overlay with trash dismiss icon',
+                    visibility: NotificationVisibility.visibilityPublic,
+                    positionGravity: PositionGravity.auto,
+                    height: 250,
+                    width: 250,
+                    // res/drawable/ic_dismiss_trash.xml
+                    dismissConfig: const OverlayDismissConfig(
+                      icon: "ic_dismiss_trash",
+                      size: 64,
+                    ),
+                  );
+                },
+                child: const Text("Show Overlay (trash dismiss icon)"),
               ),
               const SizedBox(height: 10.0),
               TextButton(

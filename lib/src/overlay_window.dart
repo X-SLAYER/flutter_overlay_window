@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_overlay_window/src/models/overlay_dismiss_config.dart';
 import 'package:flutter_overlay_window/src/models/overlay_position.dart';
 import 'package:flutter_overlay_window/src/overlay_config.dart';
 
@@ -43,6 +44,11 @@ class FlutterOverlayWindow {
   /// `notificationIcon` the name of a drawable or mipmap resource in your app
   /// (e.g. `"ic_stat_overlay"` for `android/app/src/main/res/drawable/ic_stat_overlay.png`)
   /// used as the notification small icon. Defaults to the app launcher icon.
+  ///
+  /// `dismissConfig` enables drag-to-dismiss: a target appears at the bottom
+  /// of the screen while dragging, and dropping the overlay on it closes the
+  /// overlay. Requires `enableDrag`. Default is null (disabled). See
+  /// [OverlayDismissConfig] for the available options.
   static Future<void> showOverlay({
     int height = WindowSize.fullCover,
     int width = WindowSize.matchParent,
@@ -52,6 +58,7 @@ class FlutterOverlayWindow {
     String overlayTitle = "overlay activated",
     String? overlayContent,
     bool enableDrag = false,
+    OverlayDismissConfig? dismissConfig,
     PositionGravity positionGravity = PositionGravity.none,
     OverlayPosition? startPosition,
     String? notificationIcon,
@@ -66,6 +73,7 @@ class FlutterOverlayWindow {
         "overlayTitle": overlayTitle,
         "overlayContent": overlayContent,
         "enableDrag": enableDrag,
+        "dismissConfig": dismissConfig?.toMap(),
         "notificationVisibility": visibility.name,
         "positionGravity": positionGravity.name,
         "startPosition": startPosition?.toMap(),

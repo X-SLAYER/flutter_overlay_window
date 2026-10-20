@@ -20,6 +20,7 @@ public final class WindowSetup {
     private String positionGravity = "none";
     private int notificationVisibility = NotificationCompat.VISIBILITY_PRIVATE;
     private boolean enableDrag = false;
+    private DismissConfig dismissConfig = null;
     private String notificationIcon = null;
 
     private WindowSetup() {
@@ -99,6 +100,19 @@ public final class WindowSetup {
 
     public void setEnableDrag(boolean enableDrag) {
         this.enableDrag = enableDrag;
+    }
+
+    public boolean isEnableDismiss() {
+        return dismissConfig != null;
+    }
+
+    /** Null when drag-to-dismiss is disabled. */
+    public DismissConfig getDismissConfig() {
+        return dismissConfig;
+    }
+
+    public void setDismissConfig(DismissConfig dismissConfig) {
+        this.dismissConfig = dismissConfig;
     }
 
     public String getNotificationIcon() {
