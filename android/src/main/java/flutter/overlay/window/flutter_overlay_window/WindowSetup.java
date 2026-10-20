@@ -20,10 +20,7 @@ public final class WindowSetup {
     private String positionGravity = "none";
     private int notificationVisibility = NotificationCompat.VISIBILITY_PRIVATE;
     private boolean enableDrag = false;
-    private boolean enableDismiss = false;
-    private int dismissIconColor = 0xFFFFFFFF;
-    private int dismissBackgroundColor = 0xCC333333;
-    private String dismissIcon = null;
+    private DismissConfig dismissConfig = null;
     private String notificationIcon = null;
 
     private WindowSetup() {
@@ -106,35 +103,16 @@ public final class WindowSetup {
     }
 
     public boolean isEnableDismiss() {
-        return enableDismiss;
+        return dismissConfig != null;
     }
 
-    public void setEnableDismiss(boolean enableDismiss) {
-        this.enableDismiss = enableDismiss;
+    /** Null when drag-to-dismiss is disabled. */
+    public DismissConfig getDismissConfig() {
+        return dismissConfig;
     }
 
-    public int getDismissIconColor() {
-        return dismissIconColor;
-    }
-
-    public void setDismissIconColor(int dismissIconColor) {
-        this.dismissIconColor = dismissIconColor;
-    }
-
-    public int getDismissBackgroundColor() {
-        return dismissBackgroundColor;
-    }
-
-    public void setDismissBackgroundColor(int dismissBackgroundColor) {
-        this.dismissBackgroundColor = dismissBackgroundColor;
-    }
-
-    public String getDismissIcon() {
-        return dismissIcon;
-    }
-
-    public void setDismissIcon(String dismissIcon) {
-        this.dismissIcon = dismissIcon;
+    public void setDismissConfig(DismissConfig dismissConfig) {
+        this.dismissConfig = dismissConfig;
     }
 
     public String getNotificationIcon() {

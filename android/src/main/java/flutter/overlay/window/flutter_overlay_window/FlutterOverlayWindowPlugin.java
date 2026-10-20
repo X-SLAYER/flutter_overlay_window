@@ -100,10 +100,7 @@ public class FlutterOverlayWindowPlugin implements
             String notificationVisibility = call.argument("notificationVisibility");
             String notificationIcon = call.argument("notificationIcon");
             boolean enableDrag = call.argument("enableDrag");
-            Boolean enableDismiss = call.argument("enableDismiss");
-            Integer dismissIconColor = call.argument("dismissIconColor");
-            Integer dismissBackgroundColor = call.argument("dismissBackgroundColor");
-            String dismissIcon = call.argument("dismissIcon");
+            Map<String, Object> dismissConfig = call.argument("dismissConfig");
             String positionGravity = call.argument("positionGravity");
             Map<String, Integer> startPosition = call.argument("startPosition");
             int startX = startPosition != null ? startPosition.getOrDefault("x", OverlayConstants.DEFAULT_XY) : OverlayConstants.DEFAULT_XY;
@@ -113,10 +110,7 @@ public class FlutterOverlayWindowPlugin implements
             windowSetup.setWidth(width != null ? width : -1);
             windowSetup.setHeight(height != null ? height : -1);
             windowSetup.setEnableDrag(enableDrag);
-            windowSetup.setEnableDismiss(enableDismiss != null && enableDismiss);
-            if (dismissIconColor != null) windowSetup.setDismissIconColor(dismissIconColor);
-            if (dismissBackgroundColor != null) windowSetup.setDismissBackgroundColor(dismissBackgroundColor);
-            windowSetup.setDismissIcon(dismissIcon);
+            windowSetup.setDismissConfig(dismissConfig != null ? DismissConfig.fromMap(dismissConfig) : null);
             windowSetup.setGravityFromAlignment(alignment != null ? alignment : "center");
             windowSetup.setFlag(flag != null ? flag : "flagNotFocusable");
             windowSetup.setOverlayTitle(overlayTitle);

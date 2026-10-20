@@ -77,9 +77,15 @@ class _HomePageState extends State<HomePage> {
                     height: 250,
                     width: 250,
                     startPosition: const OverlayPosition(0, -259),
-                    enableDismiss: true,
-                    dismissIconColor: Colors.white,
-                    dismissBackgroundColor: Colors.red,
+                    dismissConfig: const OverlayDismissConfig(
+                      shape: OverlayDismissShape.circle,
+                      borderRadius: 16,
+                      backgroundColor: Color(0xCC333333),
+                      activeBackgroundColor: Colors.red,
+                      borderWidth: 2,
+                      borderColor: Colors.white24,
+                      activeBorderColor: Colors.white,
+                    ),
                   );
                 },
                 child: const Text("Show Overlay"),

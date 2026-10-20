@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_overlay_window/src/models/overlay_dismiss_config.dart';
 import 'package:flutter_overlay_window/src/models/overlay_position.dart';
 import 'package:flutter_overlay_window/src/overlay_config.dart';
 
@@ -44,8 +45,10 @@ class FlutterOverlayWindow {
   /// (e.g. `"ic_stat_overlay"` for `android/app/src/main/res/drawable/ic_stat_overlay.png`)
   /// used as the notification small icon. Defaults to the app launcher icon.
   ///
-  /// `dismissIconColor` / `dismissBackgroundColor` the colors of the built-in
-  /// dismiss zone X icon and circle. Ignored when `dismissIcon` is set.
+  /// `dismissConfig` enables drag-to-dismiss: a target appears at the bottom
+  /// of the screen while dragging, and dropping the overlay on it closes the
+  /// overlay. Requires `enableDrag`. Default is null (disabled). See
+  /// [OverlayDismissConfig] for the available options.
   static Future<void> showOverlay({
     int height = WindowSize.fullCover,
     int width = WindowSize.matchParent,
@@ -55,10 +58,7 @@ class FlutterOverlayWindow {
     String overlayTitle = "overlay activated",
     String? overlayContent,
     bool enableDrag = false,
-    bool enableDismiss = false,
-    Color? dismissIconColor,
-    Color? dismissBackgroundColor,
-    String? dismissIcon,
+    OverlayDismissConfig? dismissConfig,
     PositionGravity positionGravity = PositionGravity.none,
     OverlayPosition? startPosition,
     String? notificationIcon,
@@ -73,25 +73,13 @@ class FlutterOverlayWindow {
         "overlayTitle": overlayTitle,
         "overlayContent": overlayContent,
         "enableDrag": enableDrag,
-        "enableDismiss": enableDismiss,
-        if (dismissIconColor != null)
-          "dismissIconColor": _toArgbInt(dismissIconColor),
-        if (dismissBackgroundColor != null)
-          "dismissBackgroundColor": _toArgbInt(dismissBackgroundColor),
-        if (dismissIcon != null) "dismissIcon": dismissIcon,
+        "dismissConfig": dismissConfig?.toMap(),
         "notificationVisibility": visibility.name,
         "positionGravity": positionGravity.name,
         "startPosition": startPosition?.toMap(),
         "notificationIcon": notificationIcon,
       },
     );
-  }
-
-  /// Converts a [Color] to a signed 32-bit ARGB int so it arrives on the
-  /// Android side as a Java `int` (matching `android.graphics.Color`).
-  static int _toArgbInt(Color color) {
-    // ignore: deprecated_member_use
-    return color.value.toSigned(32);
   }
 
   /// Update the foreground notification while the overlay is showing.
