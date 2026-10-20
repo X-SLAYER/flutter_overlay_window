@@ -188,6 +188,30 @@ class FlutterOverlayWindow {
     return OverlayPosition.fromMap(_res);
   }
 
+  /// Update the overlay position, size and drag in a single
+  /// [WindowManager.updateViewLayout] call to avoid flicker.
+  ///
+  /// Cancels any ongoing tray snap animation before applying the update.
+  static Future<bool?> updateOverlay({
+    required int x,
+    required int y,
+    required int width,
+    required int height,
+    required bool enableDrag,
+  }) async {
+    final bool? res = await _channel.invokeMethod<bool?>(
+      'updateOverlay',
+      {
+        'x': x,
+        'y': y,
+        'width': width,
+        'height': height,
+        'enableDrag': enableDrag,
+      },
+    );
+    return res;
+  }
+
   /// Check if the current overlay is active
   static Future<bool> isActive() async {
     final bool? _res = await _channel.invokeMethod<bool?>('isOverlayActive');
