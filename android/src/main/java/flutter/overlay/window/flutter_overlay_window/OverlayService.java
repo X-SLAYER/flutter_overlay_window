@@ -762,12 +762,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 boolean wasDragging = dragging;
                 dragging = false;  // Reset dragging state for next touch sequence
                 
-                if (windowSetup.getPositionGravity().equals("none")) {
-                    return wasDragging;
-                }
-
-                if (windowManager != null) {
-                    startTrayAnimation(params);
+                if (wasDragging && !windowSetup.getPositionGravity().equals("none")) {
+                    if (windowManager != null) {
+                        startTrayAnimation(params);
+                    }
                 }
                 return wasDragging;
         }
