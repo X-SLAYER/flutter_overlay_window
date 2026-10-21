@@ -153,6 +153,11 @@ void overlayMain() {
  /// `return` the current overlay position
  await FlutterOverlayWindow.getOverlayPosition()
 
+ /// Get the screen size in dp (useful inside the overlay, where MediaQuery is unavailable)
+ ///
+ /// `return` an OverlayPosition where x is the width and y is the height
+ final OverlayPosition size = await FlutterOverlayWindow.getScreenSize();
+
  /// Update the notification while the overlay is showing (only the given values change)
  ///
  /// `icon` name of a drawable/mipmap resource, e.g. res/drawable/ic_stat_overlay.png -> "ic_stat_overlay"
