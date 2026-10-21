@@ -728,6 +728,11 @@ public class OverlayService extends Service implements View.OnTouchListener {
                     dragging = true;
                     lastX = event.getRawX();
                     lastY = event.getRawY();
+                    // Cancel the pointer sequence Flutter already started tracking
+                    MotionEvent cancel = MotionEvent.obtain(event);
+                    cancel.setAction(MotionEvent.ACTION_CANCEL);
+                    flutterView.onTouchEvent(cancel);
+                    cancel.recycle();
                     return true;
                 }
                 float dx = event.getRawX() - lastX;
