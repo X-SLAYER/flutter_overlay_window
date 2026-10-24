@@ -1,3 +1,39 @@
+## 1.0.1
+
+### Features
+- Add drag-to-dismiss via `dismissConfig` on `showOverlay`: a target appears at the bottom of the screen while dragging, and dropping the overlay on it closes the overlay (#196)
+- Add `OverlayDismissConfig` to customize the dismiss target: `size`, `bottomMargin`, `shape` (circle or rectangle), `borderRadius`, `backgroundColor`, `iconColor`, `iconSize`, `iconStrokeWidth`, `borderWidth`, `borderColor`, a custom drawable `icon`, and hover feedback (`activeBackgroundColor`, `activeIconColor`, `activeBorderColor`, `activeScale`, `hapticFeedback`). Colors are regular Flutter `Color` values
+
+### Fixes
+- Improve overlay drag handling with sub-pixel accuracy for smoother position updates (#197)
+- Use the system touch slop as the drag threshold (#193)
+
+## 1.0.0
+
+### Features
+- Add `notificationIcon` to `showOverlay`: use any drawable or mipmap resource from your app as the notification icon (#173, #174)
+- Add `updateNotification`: change the notification title, content or icon while the overlay is showing
+- Overlay now respects the status and navigation bars and stays within the visible screen
+
+### Fixes
+- Fix `requestPermission()` never completing after the user grants permission (#187)
+- Fix `requestPermission()` hanging after a screen rotation while the settings page is open
+- Fix `requestPermission()` returning `true` without asking on Android 6 and 7
+- `requestPermission()` now returns `true` immediately when permission is already granted
+- `requestPermission()` returns a `NO_ACTIVITY` error instead of crashing when no activity is attached
+- Fix other method calls overwriting a pending `requestPermission()` result
+- Fix crash when the permission result arrives with no pending request
+- Fix overlay drag issues and smoother snap animation
+- Fix position calculation for centered overlays
+- A missing notification icon falls back to the launcher icon instead of crashing the service
+
+### Build
+- Upgrade to Android Gradle Plugin 9 and Gradle 9.1
+- Java 17 is now required
+
+### Example
+- Add buttons to test the custom notification icon and `updateNotification`
+
 ## 0.5.0
 - Update gradle version
 - Fix `NullPointerException` in OverlayService

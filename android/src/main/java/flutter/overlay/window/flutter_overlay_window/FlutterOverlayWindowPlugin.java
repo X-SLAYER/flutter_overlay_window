@@ -42,6 +42,8 @@ public class FlutterOverlayWindowPlugin implements
     private Context context;
     private Activity mActivity;
     private BasicMessageChannel<Object> messenger;
+    private final WindowSetup windowSetup = WindowSetup.getInstance();
+    private ActivityPluginBinding activityBinding;
     private Result pendingResult;
     final int REQUEST_CODE_FOR_OVERLAY_PERMISSION = 1248;
 
@@ -55,18 +57,29 @@ public class FlutterOverlayWindowPlugin implements
                 JSONMessageCodec.INSTANCE);
         messenger.setMessageHandler(this);
 
-        WindowSetup.messenger = messenger;
-        WindowSetup.messenger.setMessageHandler(this);
+        windowSetup.setMessenger(messenger);
+        windowSetup.getMessenger().setMessageHandler(this);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-        pendingResult = result;
         if (call.method.equals("checkPermission")) {
             result.success(checkOverlayPermission());
         } else if (call.method.equals("requestPermission")) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkOverlayPermission()) {
+                    result.success(true);
+                    return;
+                }
+                if (mActivity == null) {
+                    result.error("NO_ACTIVITY", "requestPermission requires a foreground activity", null);
+                    return;
+                }
+                if (pendingResult != null) {
+                    pendingResult.success(checkOverlayPermission());
+                }
+                pendingResult = result;
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
                 intent.setData(Uri.parse("package:" + mActivity.getPackageName()));
                 mActivity.startActivityForResult(intent, REQUEST_CODE_FOR_OVERLAY_PERMISSION);
@@ -85,22 +98,26 @@ public class FlutterOverlayWindowPlugin implements
             String overlayTitle = call.argument("overlayTitle");
             String overlayContent = call.argument("overlayContent");
             String notificationVisibility = call.argument("notificationVisibility");
+            String notificationIcon = call.argument("notificationIcon");
             boolean enableDrag = call.argument("enableDrag");
+            Map<String, Object> dismissConfig = call.argument("dismissConfig");
             String positionGravity = call.argument("positionGravity");
             Map<String, Integer> startPosition = call.argument("startPosition");
             int startX = startPosition != null ? startPosition.getOrDefault("x", OverlayConstants.DEFAULT_XY) : OverlayConstants.DEFAULT_XY;
             int startY = startPosition != null ? startPosition.getOrDefault("y", OverlayConstants.DEFAULT_XY) : OverlayConstants.DEFAULT_XY;
 
 
-            WindowSetup.width = width != null ? width : -1;
-            WindowSetup.height = height != null ? height : -1;
-            WindowSetup.enableDrag = enableDrag;
-            WindowSetup.setGravityFromAlignment(alignment != null ? alignment : "center");
-            WindowSetup.setFlag(flag != null ? flag : "flagNotFocusable");
-            WindowSetup.overlayTitle = overlayTitle;
-            WindowSetup.overlayContent = overlayContent == null ? "" : overlayContent;
-            WindowSetup.positionGravity = positionGravity;
-            WindowSetup.setNotificationVisibility(notificationVisibility);
+            windowSetup.setWidth(width != null ? width : -1);
+            windowSetup.setHeight(height != null ? height : -1);
+            windowSetup.setEnableDrag(enableDrag);
+            windowSetup.setDismissConfig(dismissConfig != null ? DismissConfig.fromMap(dismissConfig) : null);
+            windowSetup.setGravityFromAlignment(alignment != null ? alignment : "center");
+            windowSetup.setFlag(flag != null ? flag : "flagNotFocusable");
+            windowSetup.setOverlayTitle(overlayTitle);
+            windowSetup.setOverlayContent(overlayContent == null ? "" : overlayContent);
+            windowSetup.setPositionGravity(positionGravity);
+            windowSetup.setNotificationVisibility(notificationVisibility);
+            windowSetup.setNotificationIcon(notificationIcon);
 
             final Intent intent = new Intent(context, OverlayService.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -109,9 +126,14 @@ public class FlutterOverlayWindowPlugin implements
             intent.putExtra("startY", startY);
             context.startService(intent);
             result.success(null);
-        } else if (call.method.equals("isOverlayActive")) {
-            result.success(OverlayService.isRunning);
-            return;
+        } else if (call.method.equals("updateNotification")) {
+            String title = call.argument("title");
+            String content = call.argument("content");
+            String icon = call.argument("icon");
+            if (title != null) windowSetup.setOverlayTitle(title);
+            if (content != null) windowSetup.setOverlayContent(content);
+            if (icon != null) windowSetup.setNotificationIcon(icon);
+            result.success(OverlayService.updateNotification());
         } else if (call.method.equals("isOverlayActive")) {
             result.success(OverlayService.isRunning);
             return;
@@ -126,8 +148,17 @@ public class FlutterOverlayWindowPlugin implements
                 final Intent i = new Intent(context, OverlayService.class);
                 context.stopService(i);
                 result.success(true);
+            } else {
+                result.success(false);
             }
             return;
+        } else if (call.method.equals("setOverlayVisible")) {
+            Boolean visible = call.argument("visible");
+            if (visible == null) {
+                result.error("INVALID_ARGUMENT", "visible is required", null);
+                return;
+            }
+            result.success(OverlayService.setOverlayVisible(visible));
         } else {
             result.notImplemented();
         }
@@ -137,13 +168,12 @@ public class FlutterOverlayWindowPlugin implements
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         channel.setMethodCallHandler(null);
-        WindowSetup.messenger.setMessageHandler(null);
+        windowSetup.getMessenger().setMessageHandler(null);
     }
 
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
-        mActivity = binding.getActivity();
-        binding.addActivityResultListener(this);
+        attachToActivity(binding);
         if (FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG) == null) {
             FlutterEngineGroup enn = new FlutterEngineGroup(context);
             DartExecutor.DartEntrypoint dEntry = new DartExecutor.DartEntrypoint(
@@ -156,17 +186,31 @@ public class FlutterOverlayWindowPlugin implements
 
     @Override
     public void onDetachedFromActivityForConfigChanges() {
-        this.mActivity = null;
+        detachFromActivity();
     }
 
     @Override
     public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-        onAttachedToActivity(binding);
+        attachToActivity(binding);
     }
 
     @Override
     public void onDetachedFromActivity() {
-        this.mActivity = null;
+        detachFromActivity();
+    }
+
+    private void attachToActivity(@NonNull ActivityPluginBinding binding) {
+        activityBinding = binding;
+        mActivity = binding.getActivity();
+        binding.addActivityResultListener(this);
+    }
+
+    private void detachFromActivity() {
+        if (activityBinding != null) {
+            activityBinding.removeActivityResultListener(this);
+            activityBinding = null;
+        }
+        mActivity = null;
     }
 
     @Override
@@ -188,7 +232,10 @@ public class FlutterOverlayWindowPlugin implements
     @Override
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CODE_FOR_OVERLAY_PERMISSION) {
-            pendingResult.success(checkOverlayPermission());
+            if (pendingResult != null) {
+                pendingResult.success(checkOverlayPermission());
+                pendingResult = null;
+            }
             return true;
         }
         return false;
