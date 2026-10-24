@@ -549,6 +549,35 @@ public class OverlayService extends Service implements View.OnTouchListener {
         return null;
     }
 
+    public static boolean updateOverlay(int x, int y, int width, int height, boolean enableDrag) {
+        if (instance != null && instance.flutterView != null && instance.windowManager != null) {
+            if (instance.mTrayAnimationTimer != null) {
+                instance.mTrayAnimationTimer.cancel();
+                instance.mTrayAnimationTimer = null;
+            }
+            if (instance.mTrayTimerTask != null) {
+                instance.mTrayTimerTask.cancel();
+                instance.mTrayTimerTask = null;
+            }
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) instance.flutterView.getLayoutParams();
+            params.x = instance.dpToPx(x);
+            params.y = instance.dpToPx(y);
+            params.width = (width == -1999 || width == -1) ? -1 : instance.dpToPx(width);
+            params.height = (height == -1999 || height == -1) ? -1 : instance.dpToPx(height);
+            instance.windowSetup.setEnableDrag(enableDrag);
+            instance.rememberVisibleDimensions(params);
+            if (instance.isOverlayWindowVisible) {
+                instance.clampParamsToScreen(params);
+            } else {
+                params.width = 0;
+                params.height = 0;
+            }
+            instance.windowManager.updateViewLayout(instance.flutterView, params);
+            return true;
+        }
+        return false;
+    }
+
     public static boolean moveOverlay(int x, int y) {
         if (instance != null && instance.flutterView != null) {
             if (instance.windowManager != null) {
@@ -606,12 +635,12 @@ public class OverlayService extends Service implements View.OnTouchListener {
             isOverlayWindowVisible = false;
         } else {
             flutterView.setVisibility(View.VISIBLE);
-            params.width = lastVisibleWidthPx > 0
+            params.width = lastVisibleWidthPx != 0
                     ? lastVisibleWidthPx
                     : (windowSetup.getWidth() == -1999 || windowSetup.getWidth() == -1
                     ? windowSetup.getWidth()
                     : dpToPx(windowSetup.getWidth()));
-            params.height = lastVisibleHeightPx > 0
+            params.height = lastVisibleHeightPx != 0
                     ? lastVisibleHeightPx
                     : (windowSetup.getHeight() == -1999 || windowSetup.getHeight() == -1
                     ? windowSetup.getHeight()
@@ -635,10 +664,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
     }
 
     private void rememberVisibleDimensions(WindowManager.LayoutParams params) {
-        if (isOverlayWindowVisible && params.width > 0) {
+        if (params.width != 0) {
             lastVisibleWidthPx = params.width;
         }
-        if (isOverlayWindowVisible && params.height > 0) {
+        if (params.height != 0) {
             lastVisibleHeightPx = params.height;
         }
     }

@@ -143,6 +143,13 @@ public class FlutterOverlayWindowPlugin implements
             result.success(OverlayService.moveOverlay(x, y));
         } else if (call.method.equals("getOverlayPosition")) {
             result.success(OverlayService.getCurrentPosition());
+        } else if (call.method.equals("updateOverlay")) {
+            int x = call.argument("x");
+            int y = call.argument("y");
+            int width = call.argument("width");
+            int height = call.argument("height");
+            boolean enableDrag = call.argument("enableDrag");
+            result.success(OverlayService.updateOverlay(x, y, width, height, enableDrag));
         } else if (call.method.equals("closeOverlay")) {
             if (OverlayService.isRunning) {
                 final Intent i = new Intent(context, OverlayService.class);

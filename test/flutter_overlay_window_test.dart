@@ -25,6 +25,7 @@ void main() {
         case 'checkPermission':
         case 'requestPermission':
           return true;
+        case 'updateOverlay':
         case 'setOverlayVisible':
           return active;
         default:
@@ -64,6 +65,54 @@ void main() {
       ]);
       expect(calls.first.arguments, {'visible': false});
       expect(calls.last.arguments, {'visible': true});
+    });
+
+    test('atomic update sends one call with position, size and drag state',
+        () async {
+      expect(
+          await FlutterOverlayWindow.updateOverlay(
+            x: 20,
+            y: 40,
+            width: 320,
+            height: 180,
+            enableDrag: false,
+          ),
+          isTrue);
+      expect(calls, hasLength(1));
+      expect(calls.single.method, 'updateOverlay');
+      expect(calls.single.arguments, {
+        'x': 20,
+        'y': 40,
+        'width': 320,
+        'height': 180,
+        'enableDrag': false,
+      });
+    });
+
+    test('atomic update preserves full-size sentinels for the native handler',
+        () async {
+      await FlutterOverlayWindow.updateOverlay(
+        x: 0,
+        y: 0,
+        width: WindowSize.matchParent,
+        height: WindowSize.fullCover,
+        enableDrag: true,
+      );
+      expect(calls.single.arguments['width'], WindowSize.matchParent);
+      expect(calls.single.arguments['height'], WindowSize.fullCover);
+    });
+
+    test('atomic update returns false when no overlay is running', () async {
+      active = false;
+      expect(
+          await FlutterOverlayWindow.updateOverlay(
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            enableDrag: true,
+          ),
+          isFalse);
     });
 
     test('visibility reports failure when no overlay is running', () async {
