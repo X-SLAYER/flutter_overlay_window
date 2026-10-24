@@ -78,6 +78,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private int lastYPosition;
     private boolean dragging;
     private boolean isOverlayWindowVisible = true;
+    private boolean fullCoverHeight;
     private int lastVisibleWidthPx = 0;
     private int lastVisibleHeightPx = 0;
     private int dragSlopSquared = 576; // (24px)^2, overwritten by system touch slop in onCreate
@@ -189,6 +190,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             display.getMetrics(dm);
             szWindow.set(dm.widthPixels, dm.heightPixels);
         }
+        fullCoverHeight = windowSetup.getHeight() == -1999;
         int dx = startX == OverlayConstants.DEFAULT_XY ? 0 : startX;
         int dy = startY == OverlayConstants.DEFAULT_XY ? -statusBarHeightPx() : startY;
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
@@ -449,44 +451,24 @@ public class OverlayService extends Service implements View.OnTouchListener {
     }
 
 
-    private int overlayWidthPx(WindowManager.LayoutParams params) {
-        if (params != null && params.width > 0) {
-            return params.width;
-        }
-        if (flutterView != null && flutterView.getWidth() > 0) {
-            return flutterView.getWidth();
-        }
-        return szWindow.x;
-    }
-
-    private int overlayHeightPx(WindowManager.LayoutParams params) {
-        if (params != null && params.height > 0) {
-            return params.height;
-        }
-        if (flutterView != null && flutterView.getHeight() > 0) {
-            return flutterView.getHeight();
-        }
-        return szWindow.y;
-    }
-
     private void clampParamsToScreen(WindowManager.LayoutParams params) {
-        if (params == null) {
-            return;
-        }
-
         int[] bounds = getSafeBoundaries();
-        int availableWidth = bounds[2] - bounds[0];
-        int availableHeight = bounds[3] - bounds[1];
-        if (params.width > availableWidth) {
-            params.width = availableWidth;
+        if (fullCoverHeight) {
+            // fullCover explicitly includes the status and navigation bars.
+            bounds[1] = 0;
+            bounds[3] = szWindow.y;
         }
-        if (params.height > availableHeight) {
-            params.height = availableHeight;
-        }
-
-        final int overlayWidth = overlayWidthPx(params);
-        final int overlayHeight = overlayHeightPx(params);
-        constrainToSafeBoundaries(params, overlayWidth, overlayHeight);
+        int width = OverlayBounds.resolveSize(params.width, flutterView.getWidth(), bounds[2] - bounds[0]);
+        int height = OverlayBounds.resolveSize(params.height, flutterView.getHeight(), bounds[3] - bounds[1]);
+        if (params.width != WindowManager.LayoutParams.WRAP_CONTENT) params.width = width;
+        if (params.height != WindowManager.LayoutParams.WRAP_CONTENT) params.height = height;
+        int gravity = windowSetup.getGravity();
+        int horizontal = (gravity & Gravity.HORIZONTAL_GRAVITY_MASK) == Gravity.RIGHT ? 1
+                : (gravity & Gravity.HORIZONTAL_GRAVITY_MASK) == Gravity.LEFT ? -1 : 0;
+        int vertical = (gravity & Gravity.VERTICAL_GRAVITY_MASK) == Gravity.BOTTOM ? 1
+                : (gravity & Gravity.VERTICAL_GRAVITY_MASK) == Gravity.TOP ? -1 : 0;
+        params.x = OverlayBounds.constrainPosition(params.x, width, szWindow.x, bounds[0], bounds[2], horizontal);
+        params.y = OverlayBounds.constrainPosition(params.y, height, szWindow.y, bounds[1], bounds[3], vertical);
     }
 
     private void updateOverlayFlag(MethodChannel.Result result, String flag) {
@@ -517,6 +499,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         if (windowManager != null) {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
             params.width = (width == -1999 || width == -1) ? -1 : dpToPx(width);
+            fullCoverHeight = height == -1999;
             params.height = (height == -1999 || height == -1) ? -1 : dpToPx(height);
             windowSetup.setEnableDrag(enableDrag);
             rememberVisibleDimensions(params);
@@ -538,7 +521,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) flutterView.getLayoutParams();
             params.x = (x == -1999 || x == -1) ? -1 : dpToPx(x);
             params.y = dpToPx(y);
-            clampParamsToScreen(params);
+            if (isOverlayWindowVisible) clampParamsToScreen(params);
             windowManager.updateViewLayout(flutterView, params);
             if (result != null)
                 result.success(true);
@@ -574,6 +557,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
             params.x = instance.dpToPx(x);
             params.y = instance.dpToPx(y);
             params.width = (width == -1999 || width == -1) ? -1 : instance.dpToPx(width);
+            instance.fullCoverHeight = height == -1999;
             params.height = (height == -1999 || height == -1) ? -1 : instance.dpToPx(height);
             instance.windowSetup.setEnableDrag(enableDrag);
             instance.rememberVisibleDimensions(params);
@@ -605,7 +589,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 WindowManager.LayoutParams params = (WindowManager.LayoutParams) instance.flutterView.getLayoutParams();
                 params.x = (x == -1999 || x == -1) ? -1 : instance.dpToPx(x);
                 params.y = instance.dpToPx(y);
-                instance.clampParamsToScreen(params);
+                if (instance.isOverlayWindowVisible) instance.clampParamsToScreen(params);
                 instance.windowManager.updateViewLayout(instance.flutterView, params);
                 return true;
             } else {
@@ -966,7 +950,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 lastYPosition = params.y;
                 boolean wasDragging = dragging;
                 dragging = false;  // Reset dragging state for next touch sequence
-                
+
                 if (wasDragging && !windowSetup.getPositionGravity().equals("none")) {
                     if (windowManager != null) {
                         startTrayAnimation(params);
@@ -1112,7 +1096,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         @Override
         public void run() {
             mAnimationHandler.post(() -> {
-                if (!isOverlayWindowVisible || windowManager == null || flutterView == null) {
+                if (mTrayTimerTask != this || !isOverlayWindowVisible || windowManager == null || flutterView == null) {
                     cancel();
                     return;
                 }
@@ -1121,7 +1105,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 params.y = (int)((params.y - mDestY) / mAnimationSpeed) + mDestY;
 
                 // Apply safe boundary constraints during animation to ensure final position is within bounds
-                constrainToSafeBoundaries(params, flutterView.getWidth(), flutterView.getHeight());
+                clampParamsToScreen(params);
 
                 if (windowManager != null) {
                     windowManager.updateViewLayout(flutterView, params);
@@ -1134,7 +1118,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
                     params.y = mDestY;
 
                     // Final safe boundary check before setting final position
-                    constrainToSafeBoundaries(params, flutterView.getWidth(), flutterView.getHeight());
+                    clampParamsToScreen(params);
 
                     if (windowManager != null) {
                         windowManager.updateViewLayout(flutterView, params);
