@@ -143,6 +143,13 @@ public class FlutterOverlayWindowPlugin implements
             result.success(OverlayService.moveOverlay(x, y));
         } else if (call.method.equals("getOverlayPosition")) {
             result.success(OverlayService.getCurrentPosition());
+        } else if (call.method.equals("updateOverlay")) {
+            int x = call.argument("x");
+            int y = call.argument("y");
+            int width = call.argument("width");
+            int height = call.argument("height");
+            boolean enableDrag = call.argument("enableDrag");
+            result.success(OverlayService.updateOverlay(x, y, width, height, enableDrag));
         } else if (call.method.equals("getScreenSize")) {
             result.success(OverlayService.getScreenSize());
         } else if (call.method.equals("closeOverlay")) {
@@ -154,6 +161,13 @@ public class FlutterOverlayWindowPlugin implements
                 result.success(false);
             }
             return;
+        } else if (call.method.equals("setOverlayVisible")) {
+            Boolean visible = call.argument("visible");
+            if (visible == null) {
+                result.error("INVALID_ARGUMENT", "visible is required", null);
+                return;
+            }
+            result.success(OverlayService.setOverlayVisible(visible));
         } else {
             result.notImplemented();
         }

@@ -188,6 +188,30 @@ class FlutterOverlayWindow {
     return OverlayPosition.fromMap(_res);
   }
 
+  /// Update the overlay position, size and drag in a single
+  /// [WindowManager.updateViewLayout] call to avoid flicker.
+  ///
+  /// Cancels any ongoing tray snap animation before applying the update.
+  static Future<bool?> updateOverlay({
+    required int x,
+    required int y,
+    required int width,
+    required int height,
+    required bool enableDrag,
+  }) async {
+    final bool? res = await _channel.invokeMethod<bool?>(
+      'updateOverlay',
+      {
+        'x': x,
+        'y': y,
+        'width': width,
+        'height': height,
+        'enableDrag': enableDrag,
+      },
+    );
+    return res;
+  }
+
   /// Get the screen size in dp.
   ///
   /// Returns the width and height as an [OverlayPosition].
@@ -205,6 +229,15 @@ class FlutterOverlayWindow {
   static Future<bool> isActive() async {
     final bool? _res = await _channel.invokeMethod<bool?>('isOverlayActive');
     return _res ?? false;
+  }
+
+  /// Show or hide the overlay window without stopping the overlay service.
+  static Future<bool?> setOverlayVisible({required bool visible}) async {
+    final bool? _res = await _channel.invokeMethod<bool?>(
+      'setOverlayVisible',
+      {'visible': visible},
+    );
+    return _res;
   }
 
   /// Dispose overlay stream

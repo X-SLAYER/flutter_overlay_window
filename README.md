@@ -123,6 +123,11 @@ void overlayMain() {
  /// closes overlay if open
  await FlutterOverlayWindow.closeOverlay();
 
+/// show or hide the overlay window without stopping the overlay service
+/// (the overlay keeps its state, position and size while hidden)
+await FlutterOverlayWindow.setOverlayVisible(visible: false);
+await FlutterOverlayWindow.setOverlayVisible(visible: true);
+
  /// broadcast data to and from overlay app
  await FlutterOverlayWindow.shareData("Hello from the other side");
 
