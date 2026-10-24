@@ -1,3 +1,9 @@
+## 1.0.2
+
+### Features
+- Add `getScreenSize`: returns the real screen width and height in dp as an `OverlayPosition`, useful for positioning the overlay relative to screen edges since `MediaQuery` is unavailable in the overlay isolate (#202)
+- Add `setOverlayVisible`: show or hide the overlay window without stopping the overlay service, keeping its position and size while hidden
+
 ## 1.0.1
 
 ### Features
