@@ -150,6 +150,8 @@ public class FlutterOverlayWindowPlugin implements
             int height = call.argument("height");
             boolean enableDrag = call.argument("enableDrag");
             result.success(OverlayService.updateOverlay(x, y, width, height, enableDrag));
+        } else if (call.method.equals("getScreenSize")) {
+            result.success(OverlayService.getScreenSize());
         } else if (call.method.equals("closeOverlay")) {
             if (OverlayService.isRunning) {
                 final Intent i = new Intent(context, OverlayService.class);

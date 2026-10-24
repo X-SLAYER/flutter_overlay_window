@@ -212,6 +212,19 @@ class FlutterOverlayWindow {
     return res;
   }
 
+  /// Get the screen size in dp.
+  ///
+  /// Returns the width and height as an [OverlayPosition].
+  static Future<OverlayPosition> getScreenSize() async {
+    final Map<Object?, Object?>? res = await _channel.invokeMethod(
+      'getScreenSize',
+    );
+    return OverlayPosition(
+      res?['width'] as double? ?? 0,
+      res?['height'] as double? ?? 0,
+    );
+  }
+
   /// Check if the current overlay is active
   static Future<bool> isActive() async {
     final bool? _res = await _channel.invokeMethod<bool?>('isOverlayActive');

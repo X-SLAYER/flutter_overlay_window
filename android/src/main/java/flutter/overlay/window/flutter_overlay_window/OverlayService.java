@@ -20,6 +20,7 @@ import android.app.PendingIntent;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -71,7 +72,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
     private int clickableFlag = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 
-    private Handler mAnimationHandler = new Handler();
+    private Handler mAnimationHandler = new Handler(Looper.getMainLooper());
     private float lastX, lastY;
     private float dragRemainderX, dragRemainderY; // accumulate sub-pixel drag deltas
     private int lastYPosition;
@@ -174,19 +175,19 @@ public class OverlayService extends Service implements View.OnTouchListener {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         // Get real screen dimensions (including system bars)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            android.graphics.Rect bounds = windowManager.getCurrentWindowMetrics().getBounds();
+            szWindow.set(bounds.width(), bounds.height());
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             Display display = windowManager.getDefaultDisplay();
             DisplayMetrics dm = new DisplayMetrics();
             display.getRealMetrics(dm);
             szWindow.set(dm.widthPixels, dm.heightPixels);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            windowManager.getDefaultDisplay().getSize(szWindow);
         } else {
-            DisplayMetrics displaymetrics = new DisplayMetrics();
-            windowManager.getDefaultDisplay().getMetrics(displaymetrics);
-            int w = displaymetrics.widthPixels;
-            int h = displaymetrics.heightPixels;
-            szWindow.set(w, h);
+            Display display = windowManager.getDefaultDisplay();
+            DisplayMetrics dm = new DisplayMetrics();
+            display.getMetrics(dm);
+            szWindow.set(dm.widthPixels, dm.heightPixels);
         }
         int dx = startX == OverlayConstants.DEFAULT_XY ? 0 : startX;
         int dy = startY == OverlayConstants.DEFAULT_XY ? -statusBarHeightPx() : startY;
@@ -229,16 +230,26 @@ public class OverlayService extends Service implements View.OnTouchListener {
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private int screenHeight() {
         if (mScreenHeight == -1) {
-            Display display = windowManager.getDefaultDisplay();
-            DisplayMetrics dm = new DisplayMetrics();
-            display.getRealMetrics(dm);
+            int rawHeight;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                rawHeight = windowManager.getCurrentWindowMetrics().getBounds().height();
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                Display display = windowManager.getDefaultDisplay();
+                DisplayMetrics dm = new DisplayMetrics();
+                display.getRealMetrics(dm);
+                rawHeight = dm.heightPixels;
+            } else {
+                Display display = windowManager.getDefaultDisplay();
+                DisplayMetrics dm = new DisplayMetrics();
+                display.getMetrics(dm);
+                rawHeight = dm.heightPixels;
+            }
             mScreenHeight = inPortrait() ?
-                    dm.heightPixels + statusBarHeightPx() + navigationBarHeightPx()
+                    rawHeight + statusBarHeightPx() + navigationBarHeightPx()
                     :
-                    dm.heightPixels + statusBarHeightPx();
+                    rawHeight + statusBarHeightPx();
         }
         return mScreenHeight;
     }
@@ -578,6 +589,16 @@ public class OverlayService extends Service implements View.OnTouchListener {
         return false;
     }
 
+    public static Map<String, Double> getScreenSize() {
+        if (instance != null && instance.szWindow.x > 0 && instance.szWindow.y > 0) {
+            Map<String, Double> size = new HashMap<>();
+            size.put("width", instance.pxToDp(instance.szWindow.x));
+            size.put("height", instance.pxToDp(instance.szWindow.y));
+            return size;
+        }
+        return null;
+    }
+
     public static boolean moveOverlay(int x, int y) {
         if (instance != null && instance.flutterView != null) {
             if (instance.windowManager != null) {
@@ -907,6 +928,11 @@ public class OverlayService extends Service implements View.OnTouchListener {
                     dragging = true;
                     lastX = event.getRawX();
                     lastY = event.getRawY();
+                    // Cancel the pointer sequence Flutter already started tracking
+                    MotionEvent cancel = MotionEvent.obtain(event);
+                    cancel.setAction(MotionEvent.ACTION_CANCEL);
+                    flutterView.onTouchEvent(cancel);
+                    cancel.recycle();
                     return true;
                 }
                 float dx = event.getRawX() - lastX;
@@ -940,13 +966,11 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 lastYPosition = params.y;
                 boolean wasDragging = dragging;
                 dragging = false;  // Reset dragging state for next touch sequence
-
-                if (windowSetup.getPositionGravity().equals("none")) {
-                    return wasDragging;
-                }
-
-                if (windowManager != null) {
-                    startTrayAnimation(params);
+                
+                if (wasDragging && !windowSetup.getPositionGravity().equals("none")) {
+                    if (windowManager != null) {
+                        startTrayAnimation(params);
+                    }
                 }
                 return wasDragging;
         }
