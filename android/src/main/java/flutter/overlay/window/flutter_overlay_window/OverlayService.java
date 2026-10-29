@@ -127,10 +127,15 @@ public class OverlayService extends Service implements View.OnTouchListener {
     public int onStartCommand(Intent intent, int flags, int startId) {
         mResources = getApplicationContext().getResources();
 
+        if (intent == null) {
+            cleanupAndStopSelf();
+            return START_NOT_STICKY;
+        }
+
         boolean isCloseWindow = intent.getBooleanExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, false);
         if (isCloseWindow) {
             cleanupAndStopSelf();
-            return START_STICKY;
+            return START_NOT_STICKY;
         }
 
         if (windowManager != null) {
@@ -216,7 +221,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         lastVisibleHeightPx = params.height;
         isOverlayWindowVisible = true;
         moveOverlay(dx, dy, null);
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
 
