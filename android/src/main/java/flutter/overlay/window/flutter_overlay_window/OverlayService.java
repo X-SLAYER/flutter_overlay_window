@@ -125,17 +125,17 @@ public class OverlayService extends Service implements View.OnTouchListener {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mResources = getApplicationContext().getResources();
-
         if (intent == null) {
-            cleanupAndStopSelf();
+            Log.w("OverlayService", "Service restarted with null intent");
             return START_NOT_STICKY;
         }
+
+        mResources = getApplicationContext().getResources();
 
         boolean isCloseWindow = intent.getBooleanExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, false);
         if (isCloseWindow) {
             cleanupAndStopSelf();
-            return START_NOT_STICKY;
+            return START_STICKY;
         }
 
         if (windowManager != null) {
@@ -221,9 +221,28 @@ public class OverlayService extends Service implements View.OnTouchListener {
         lastVisibleHeightPx = params.height;
         isOverlayWindowVisible = true;
         moveOverlay(dx, dy, null);
-        return START_NOT_STICKY;
+
+        // Defer startForeground() until view is attached to WindowManager to satisfy Android 15 background service rules
+        flutterView.post(() -> startForegroundSafely(0));
+
+        return START_STICKY;
     }
 
+    private void startForegroundSafely(final int retryCount) {
+        try {
+            Notification notification = buildNotification();
+            startForeground(OverlayConstants.NOTIFICATION_ID, notification);
+            Log.d("OverlayService", "Foreground service started successfully on attempt " + retryCount);
+        } catch (Exception e) {
+            Log.w("OverlayService", "startForeground failed (attempt " + retryCount + "): " + e.getMessage());
+            if (retryCount < 5) {
+                mAnimationHandler.postDelayed(() -> startForegroundSafely(retryCount + 1), 100);
+            } else {
+                Log.e("OverlayService", "startForeground exhausted retries. Stopping service to prevent crash.", e);
+                cleanupAndStopSelf();
+            }
+        }
+    }
 
     private void cleanupAndStopSelf() {
         if (windowManager != null) {
@@ -235,7 +254,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
         isRunning = false;
         stopSelf();
     }
-
 
     private int screenHeight() {
         if (mScreenHeight == -1) {
@@ -303,7 +321,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
         int rightBound = screenWidth;
         int topBound = statusBarHeight; // Account for status bar
         int bottomBound = screenHeight - navigationBarHeight; // Account for navigation bar
-
 
         return new int[]{leftBound, topBound, rightBound, bottomBound};
     }
@@ -455,7 +472,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
     }
 
-
     private void clampParamsToScreen(WindowManager.LayoutParams params) {
         int[] bounds = getSafeBoundaries();
         if (fullCoverHeight) {
@@ -536,7 +552,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
     }
 
-
     public static Map<String, Double> getCurrentPosition() {
         if (instance != null && instance.flutterView != null) {
             WindowManager.LayoutParams params = (WindowManager.LayoutParams) instance.flutterView.getLayoutParams();
@@ -604,7 +619,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
             return false;
         }
     }
-
 
     public static boolean setOverlayVisible(boolean visible) {
         if (instance == null || instance.flutterView == null || instance.windowManager == null) {
@@ -682,7 +696,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
     }
 
-
     @Override
     public void onCreate() {
         int slop = android.view.ViewConfiguration.get(this).getScaledTouchSlop();
@@ -706,7 +719,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
             FlutterEngineCache.getInstance().put(OverlayConstants.CACHED_TAG, flutterEngine);
         }
 
-
         // Create the MethodChannel with the properly initialized FlutterEngine
         if (flutterEngine != null) {
             flutterChannel = new MethodChannel(flutterEngine.getDartExecutor(), OverlayConstants.OVERLAY_TAG);
@@ -714,7 +726,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
 
         createNotificationChannel();
-        startForeground(OverlayConstants.NOTIFICATION_ID, buildNotification());
+        // Removed startForeground() here to comply with Android 15 background service rules
         instance = this;
     }
 
@@ -998,8 +1010,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
 
         Log.d("OverlayService", "Position after constraints - X: " + params.x + ", Y: " + params.y);
 
-
-
         if (windowManager != null) {
             windowManager.updateViewLayout(flutterView, params);
         }
@@ -1217,5 +1227,4 @@ public class OverlayService extends Service implements View.OnTouchListener {
         @Override public int getIntrinsicWidth() { return size; }
         @Override public int getIntrinsicHeight() { return size; }
     }
-
 }
